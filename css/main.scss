@@ -1,0 +1,39 @@
+$main-bg-color: #66ccff;
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+.todo-container {
+  width: 350px;
+  height: 100%;
+  border-right: 3px solid #999;
+}
+
+.clock-container {
+  background-color: #666;
+  color: #fff;
+  font-size: 2rem;
+  height: 200px;
+}
+
+.title-container {
+  background-color: $main-bg-color;
+  color: #fff;
+  font-size: 2rem;
+}
+
+.list-box-container {
+  .list-container {
+    .list-item {
+      padding: 8px;
+    }
+  }
+}

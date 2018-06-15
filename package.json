@@ -1,0 +1,37 @@
+{
+  "//1": "describes your app and its dependencies",
+  "//2": "https://docs.npmjs.com/files/package.json",
+  "//3": "updating this file will download and update your packages",
+  "name": "todo-the-game",
+  "version": "0.0.1",
+  "description": "A game based on the popular todo app demo",
+  "main": "server.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack && node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "jsx-loader": "^0.13.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "webpack": "^4.12.0",
+    "webpack-cli": "^3.0.7",
+    "style-loader": "^0.21.0",
+    "css-loader": "^0.28.11",
+    "sass-loader": "^7.0.3",
+    "node-sass": "^4.9.0"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "https://glitch.com/edit/#!/starter-react"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express"
+  ]
+}
