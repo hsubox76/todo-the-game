@@ -1,17 +1,16 @@
 import React from 'react';
-import { STATUS } from '../constants';
 
 class ListItem extends React.Component {
   handleCheckClick = () => {
-    if (this.props.item.status === STATUS.DONE) {
+    if (this.props.item.isDone) {
       return;
     }
-    this.props.onStatusChange(this.props.item.id, STATUS.DONE);
+    this.props.onDone(this.props.item.id);
   }
   render() {
     const props = this.props;
     const classes = ['list-item'];
-    if (props.item.status === STATUS.DONE) {
+    if (props.item.isDone) {
       classes.push('item-done');
     }
     return (
@@ -20,7 +19,7 @@ class ListItem extends React.Component {
           <input
             type="checkbox"
             className="regular-checkbox"
-            checked={props.item.status === STATUS.DONE}
+            checked={props.item.isDone}
             onClick={this.handleCheckClick}
           />
         </div>
