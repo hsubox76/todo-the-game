@@ -1,0 +1,72 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+#root {
+  height: 100%;
+}
+
+.main-container {
+  width: 350px;
+  height: 100%;
+  border-right: 3px solid #999;
+}
+
+.clock-container {
+  background-color: #666;
+  color: #fff;
+  font-size: 2rem;
+  height: 200px;
+}
+
+.title-container {
+  background-color: #66ccff;
+  color: #fff;
+  font-size: 2rem;
+}
+
+.list-item {
+  margin: 3px;
+  padding: 8px;
+  background-color: #666;
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.list-item.item-done {
+  background-color: #ccc;
+}
+
+.list-item div {
+  height: 25px;
+  display: flex;
+  align-items: center;
+}
+
+.regular-checkbox {
+	-webkit-appearance: none;
+	background-color: #fafafa;
+	border: 1px solid #cacece;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+	padding: 9px;
+	border-radius: 3px;
+}
+
+.regular-checkbox:active, .regular-checkbox:checked:active {
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+}
+
+.regular-checkbox:checked {
+	background-color: #006677;
+	border: 1px solid #adb8c0;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+	color: #99a1a7;
+}
