@@ -2,20 +2,20 @@ import React from 'react';
 import Clock from './Clock';
 import Title from './Title';
 import ListBox from './ListBox';
-import { INITIAL_LIST, ITEMS } from '../constants';
+import { INITIAL_TASKS, ITEMS } from '../constants';
 
 class Main extends React.Component {
   constructor() {
     super();
     this.lastId = 0;
     this.state = {
-      list: INITIAL_LIST.map(this.prepareListItem),
+      list: INITIAL_TASKS.map((item) => this.prepareListItem(item, false)),
       time: '12:35'
     };
   }
   
-  prepareListItem = (item) => {
-    return Object.assign({}, item, { isDone: false, id: this.lastId++ })
+  prepareListItem = (item, fadeIn = false) => {
+    return Object.assign({}, item, { isDone: false, id: this.lastId++, fadeIn })
   }
   
   handleDone = (id) => {
@@ -26,9 +26,14 @@ class Main extends React.Component {
               .concat(newItem)
               .concat(this.state.list.slice(index + 1));
     if (item.spawns) {
-      item.spawns.forEach(cid => {
-        const spawnedItem = ITEMS.find(i => i.cid === cid);
-        newList.push(this.prepareListItem(spawnedItem));
+      item.spawns.forEach(taskToSpawn => {
+        const spawnedItem = ITEMS.find(i => i.taskId === taskToSpawn.taskId);
+        setTimeout(() => {
+          console.log('delay is up');
+          this.setState({
+            list: this.state.list.concat(this.prepareListItem(spawnedItem, true))
+          });
+        }, taskToSpawn.delay * 1000);
       });
     }
     this.setState({

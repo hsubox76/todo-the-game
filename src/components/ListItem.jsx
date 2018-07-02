@@ -13,6 +13,9 @@ class ListItem extends React.Component {
     if (props.item.isDone) {
       classes.push('item-done');
     }
+    if (props.item.fadeIn) {
+      classes.push('fade-in');
+    }
     return (
       <div className={classes.join(' ')}>
         <div>
@@ -20,7 +23,7 @@ class ListItem extends React.Component {
             type="checkbox"
             className="regular-checkbox"
             checked={props.item.isDone}
-            onClick={this.handleCheckClick}
+            onChange={this.handleCheckClick}
           />
         </div>
         <div>{props.item.description}</div>

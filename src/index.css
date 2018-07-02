@@ -41,6 +41,24 @@ body {
   align-items: center;
 }
 
+.list-transition-enter {
+  opacity: 0.01;
+}
+
+.list-transition-enter.list-transition-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.list-item.item-done.list-transition-enter {
+  background-color: #666;
+}
+
+.list-item.item-done.list-transition-enter.list-transition-enter-active {
+  background-color: #ccc;
+  transition: background-color 300ms ease-in;
+}
+
 .list-item.item-done {
   background-color: #ccc;
 }

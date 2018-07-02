@@ -1,9 +1,14 @@
-export const INITIAL_LIST = [
-  { cid: 1, description: 'abc', spawns: [4] },
-  { cid: 2, description: 'def' },
-  { cid: 3, description: 'ghi' }
+export const INITIAL_TASKS = [
+  {
+    taskId: 1,
+    description: 'abc',
+    spawns: [{ taskId: 4, delay: 2 }]
+    
+  },
+  { taskId: 2, description: 'def' },
+  { taskId: 3, description: 'ghi' }
 ];
 
 export const ITEMS = [
-  { cid: 4, description: '123' }
+  { taskId: 4, description: '123' }
 ];
