@@ -68,16 +68,16 @@ body {
 
 .list-transition-enter.list-transition-enter-active {
   opacity: 1;
-  transition: opacity 300ms ease-in;
+  transition: opacity 500ms ease-in;
 }
 
-.list-item.item-done.list-transition-enter {
-  background-color: var(--main-color);
+.list-item.list-transition-leave {
+  opacity: 1;
 }
 
-.list-item.item-done.list-transition-enter.list-transition-enter-active {
-  background-color: var(--main-color-fade);
-  transition: background-color 300ms ease-in;
+.list-item.list-transition-leave.list-transition-leave-active {
+  opacity: 0.01;
+  transition: opacity 500ms ease-in;
 }
 
 .list-item.item-done {

@@ -84,7 +84,7 @@ class Main extends React.Component {
       });
     }, 5000);
     this.setState({
-      list: this.sortList(newList)
+      list: newList
     });
   }
   
