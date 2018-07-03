@@ -43,6 +43,18 @@ body {
   font-size: 2rem;
   height: 200px;
   margin: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.clock-container .time {
+  font-size: 3rem;
+}
+
+.clock-container .date {
+  font-size: 1.5rem;
 }
 
 .title-container {

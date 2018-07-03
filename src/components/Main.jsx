@@ -1,8 +1,12 @@
 import React from 'react';
+import { addMinutes } from 'date-fns';
 import Clock from './Clock';
 import Title from './Title';
 import ListBox from './ListBox';
 import { INITIAL_TASKS, ITEMS } from '../constants';
+
+const GAME_MINUTE_LENGTH = 1000;
+const CLOCK_INCREMENT_INTERVAL_MINUTES = 5;
 
 class Main extends React.Component {
   constructor() {
@@ -10,42 +14,68 @@ class Main extends React.Component {
     this.lastId = 0;
     this.state = {
       list: [],
-      time: '12:35',
+      time: new Date(2018, 0, 1, 8),
       timers: {}
     };
   }
   
   componentDidMount() {
+    this.incrementClock();
     this.setState({
       list: INITIAL_TASKS.map((item) => this.prepareListItem(item, false)),
     });
   }
   
+  componentWillUnmount() {
+    for (const key in this.state.timers) {
+      if (this.state.timers[key]) {
+        this.state.timers[key].forEach(timeoutId => clearTimeout(timeoutId));
+      }
+    }
+  }
+  
+  incrementClock = () => {
+    const timeoutId = setTimeout(() => {
+      this.setState({
+        time: addMinutes(this.state.time, CLOCK_INCREMENT_INTERVAL_MINUTES)
+      });
+      this.incrementClock();
+    }, GAME_MINUTE_LENGTH * CLOCK_INCREMENT_INTERVAL_MINUTES);
+    this.setState({
+      timers: Object.assign({}, this.state.timers, { clock: [timeoutId] })
+    });
+  }
+  
+  removeItemWithId = (id, list = this.state.list) => {
+    const index = list.findIndex(item => item.id === id);
+    return list
+            .slice(0, index)
+            .concat(list.slice(index + 1));
+  }
+  
   prepareListItem = (item, fadeIn = false) => {
     const id = this.lastId++;
-    if (item.triggers) {
-      item.triggers.forEach(trigger => {
-        if (trigger.age) {
-          if (trigger.die && trigger.spawns) {
-            const timeoutId = setTimeout(() => {
-              const index = this.state.list.findIndex(item => item.id === id);
-              // need to kill its timers too probably!
-              const spawnedItems = trigger.spawns.map(taskToSpawn => {
-                const spawnedItem = ITEMS.find(i => i.taskId === taskToSpawn.taskId);
-                return this.prepareListItem(spawnedItem, true)
-              });
-              this.setState({
-                list: this.state.list.slice(0, index)
-                    .concat(this.state.list.slice(index + 1))
-                    .concat(spawnedItems)
-              });
-            }, trigger.age * 1000);
-            this.setState({
-              timers: Object.assign({}, this.state.timers, {[id]: timeoutId})
-            });
+    if (item.spawnsOnAge) {
+      const timeoutIds = [];
+      item.spawnsOnAge.forEach(spawn => {
+        const timeoutId = setTimeout(() => {
+          const spawnedItem = ITEMS.find(i => i.taskId === spawn.taskId);
+          let newList = this.state.list;
+          if (spawn.killParent) {
+            // need to kill parent's running timers too probably!
+            newList = this.removeItemWithId(id);
           }
-        }
+          this.setState({
+            list: newList.concat(this.prepareListItem(spawnedItem, true))
+          });
+        }, spawn.age * 1000);
+        timeoutIds.push(timeoutId);
       });
+      if (timeoutIds.length) {
+        this.setState({
+          timers: Object.assign({}, this.state.timers, {[id]: timeoutIds})
+        });
+      }
     }
     return Object.assign({}, item, { isDone: false, id, fadeIn })
   }
@@ -53,7 +83,7 @@ class Main extends React.Component {
   handleDone = (id) => {
     // need to kill its timers
     if (this.state.timers[id]) {
-      clearTimeout(this.state.timers[id]);
+      this.state.timers[id].forEach(timeoutId => clearTimeout(timeoutId));
       this.setState({
         timers: Object.assign({}, this.state.timers, {[id]: null})
       });
@@ -64,23 +94,24 @@ class Main extends React.Component {
     const newList = this.state.list.slice(0, index)
               .concat(newItem)
               .concat(this.state.list.slice(index + 1));
-    if (item.spawns) {
-      item.spawns.forEach(taskToSpawn => {
+    // items to spawn on done
+    if (item.spawnsOnDone) {
+      item.spawnsOnDone.forEach(taskToSpawn => {
+        // these timeout ids should be stored for possible cancellation
         setTimeout(() => {
           const spawnedItem = INITIAL_TASKS.concat(ITEMS)
             .find(i => i.taskId === taskToSpawn.taskId);
           this.setState({
-            list: this.state.list.concat(this.prepareListItem(spawnedItem, true))
+            list: this.state.list
+                    .concat(this.prepareListItem(spawnedItem, true))
           });
         }, taskToSpawn.delay * 1000);
       });
     }
     // disappear after a while
     setTimeout(() => {
-      const index = this.state.list.findIndex(item => item.id === id);
       this.setState({
-        list: this.state.list.slice(0, index)
-            .concat(this.state.list.slice(index + 1))
+        list: this.removeItemWithId(id)
       });
     }, 5000);
     this.setState({

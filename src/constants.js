@@ -2,11 +2,11 @@ export const INITIAL_TASKS = [
   {
     taskId: 1,
     description: 'Water plants',
-    spawns: [
+    spawnsOnDone: [
       { taskId: 1, delay: 2 },
     ],
-    triggers: [
-      { age: 5, spawns: [{ taskId: 4 }], die: true },
+    spawnsOnAge: [
+      { age: 5, taskId: 4, killParent: true }
     ]
     
   },
