@@ -1,8 +1,13 @@
 export const INITIAL_TASKS = [
   {
     taskId: 1,
-    description: 'abc',
-    spawns: [{ taskId: 4, delay: 2 }]
+    description: 'Water plants',
+    spawns: [
+      { taskId: 1, delay: 2 },
+    ],
+    triggers: [
+      { age: 5, spawns: [{ taskId: 4 }], die: true },
+    ]
     
   },
   { taskId: 2, description: 'def' },
@@ -10,5 +15,5 @@ export const INITIAL_TASKS = [
 ];
 
 export const ITEMS = [
-  { taskId: 4, description: '123' }
+  { taskId: 4, description: 'Take dead plant out to garbage' }
 ];

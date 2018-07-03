@@ -9,16 +9,55 @@ class Main extends React.Component {
     super();
     this.lastId = 0;
     this.state = {
-      list: INITIAL_TASKS.map((item) => this.prepareListItem(item, false)),
-      time: '12:35'
+      list: [],
+      time: '12:35',
+      timers: {}
     };
   }
   
+  componentDidMount() {
+    this.setState({
+      list: INITIAL_TASKS.map((item) => this.prepareListItem(item, false)),
+    });
+  }
+  
   prepareListItem = (item, fadeIn = false) => {
-    return Object.assign({}, item, { isDone: false, id: this.lastId++, fadeIn })
+    const id = this.lastId++;
+    if (item.triggers) {
+      item.triggers.forEach(trigger => {
+        if (trigger.age) {
+          if (trigger.die && trigger.spawns) {
+            const timeoutId = setTimeout(() => {
+              const index = this.state.list.findIndex(item => item.id === id);
+              // need to kill its timers too probably!
+              const spawnedItems = trigger.spawns.map(taskToSpawn => {
+                const spawnedItem = ITEMS.find(i => i.taskId === taskToSpawn.taskId);
+                return this.prepareListItem(spawnedItem, true)
+              });
+              this.setState({
+                list: this.state.list.slice(0, index)
+                    .concat(this.state.list.slice(index + 1))
+                    .concat(spawnedItems)
+              });
+            }, trigger.age * 1000);
+            this.setState({
+              timers: Object.assign({}, this.state.timers, {[id]: timeoutId})
+            });
+          }
+        }
+      });
+    }
+    return Object.assign({}, item, { isDone: false, id, fadeIn })
   }
   
   handleDone = (id) => {
+    // need to kill its timers
+    if (this.state.timers[id]) {
+      clearTimeout(this.state.timers[id]);
+      this.setState({
+        timers: Object.assign({}, this.state.timers, {[id]: null})
+      });
+    }
     const index = this.state.list.findIndex(item => item.id === id);
     const item = this.state.list[index];
     const newItem = Object.assign({}, item, { isDone: true });
@@ -27,15 +66,23 @@ class Main extends React.Component {
               .concat(this.state.list.slice(index + 1));
     if (item.spawns) {
       item.spawns.forEach(taskToSpawn => {
-        const spawnedItem = ITEMS.find(i => i.taskId === taskToSpawn.taskId);
         setTimeout(() => {
-          console.log('delay is up');
+          const spawnedItem = INITIAL_TASKS.concat(ITEMS)
+            .find(i => i.taskId === taskToSpawn.taskId);
           this.setState({
             list: this.state.list.concat(this.prepareListItem(spawnedItem, true))
           });
         }, taskToSpawn.delay * 1000);
       });
     }
+    // disappear after a while
+    setTimeout(() => {
+      const index = this.state.list.findIndex(item => item.id === id);
+      this.setState({
+        list: this.state.list.slice(0, index)
+            .concat(this.state.list.slice(index + 1))
+      });
+    }, 5000);
     this.setState({
       list: this.sortList(newList)
     });
