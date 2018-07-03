@@ -54,3 +54,5 @@ export const ITEMS = [
     description: 'Find out where maggots are coming from'
   }
 ];
+
+export const PALETTES = [1, 2, 3, 4, 5, 6];

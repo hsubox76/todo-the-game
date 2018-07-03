@@ -3,7 +3,7 @@ import { addMinutes } from 'date-fns';
 import Clock from './Clock';
 import Title from './Title';
 import ListBox from './ListBox';
-import { INITIAL_TASKS, ITEMS } from '../constants';
+import { INITIAL_TASKS, ITEMS, PALETTES } from '../constants';
 
 const GAME_MINUTE_LENGTH = 1000;
 const CLOCK_INCREMENT_INTERVAL_MINUTES = 5;
@@ -15,7 +15,8 @@ class Main extends React.Component {
     this.state = {
       list: [],
       time: new Date(2018, 0, 1, 8),
-      timers: {}
+      timers: {},
+      palette: 1
     };
   }
   
@@ -132,8 +133,22 @@ class Main extends React.Component {
   }
   
   render() {
+    const classes = ['main-container'];
+    classes.push('palette-' + this.state.palette);
     return (
-      <div className="main-container">
+      <div className={classes.join(' ')}>
+          <div className="settings-container">
+            <div className="palette-description">themes</div>
+            {PALETTES.map((paletteId) => (
+              <button
+                key={paletteId}
+                onClick={() => this.setState({ palette: paletteId })}
+                className={'palette-button palette-' + paletteId + (paletteId === this.state.palette ? ' selected' : '')}
+              >
+                {paletteId}
+              </button>
+            ))}
+          </div>
           <Clock time={this.state.time} />
           <Title />
           <ListBox list={this.state.list} onDone={this.handleDone} />
