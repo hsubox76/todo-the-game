@@ -68,7 +68,7 @@ class Main extends React.Component {
           this.setState({
             list: newList.concat(this.prepareListItem(spawnedItem, true))
           });
-        }, spawn.age * 1000);
+        }, spawn.age * GAME_MINUTE_LENGTH);
         timeoutIds.push(timeoutId);
       });
       if (timeoutIds.length) {
@@ -105,7 +105,7 @@ class Main extends React.Component {
             list: this.state.list
                     .concat(this.prepareListItem(spawnedItem, true))
           });
-        }, taskToSpawn.delay * 1000);
+        }, taskToSpawn.delay * GAME_MINUTE_LENGTH);
       });
     }
     // disappear after a while

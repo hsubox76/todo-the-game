@@ -18,7 +18,7 @@ class ListItem extends React.Component {
     }
     return (
       <div className={classes.join(' ')}>
-        <div>
+        <div className="checkbox-container">
           <input
             type="checkbox"
             className="regular-checkbox"
@@ -26,7 +26,7 @@ class ListItem extends React.Component {
             onChange={this.handleCheckClick}
           />
         </div>
-        <div>{props.item.description}</div>
+        <div className="description">{props.item.description}</div>
       </div>
     );
   }
