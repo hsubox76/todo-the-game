@@ -1,12 +1,14 @@
 import React from 'react';
-import { addMinutes } from 'date-fns';
+import { addHours } from 'date-fns';
 import Clock from './Clock';
 import Title from './Title';
 import ListBox from './ListBox';
-import { INITIAL_TASKS, ITEMS, PALETTES } from '../constants';
-
-const GAME_MINUTE_LENGTH = 1000;
-const CLOCK_INCREMENT_INTERVAL_MINUTES = 5;
+import {
+  PALETTES,
+  GAME_HOUR_LENGTH,
+  CLOCK_INCREMENT_INTERVAL_HOURS
+} from '../data/constants';
+import { INITIAL_TASK_IDS, TASKS } from '../data/tasks';
 
 class Main extends React.Component {
   constructor() {
@@ -23,7 +25,11 @@ class Main extends React.Component {
   componentDidMount() {
     this.incrementClock();
     this.setState({
-      list: INITIAL_TASKS.map((item) => this.prepareListItem(item, false)),
+      list: INITIAL_TASK_IDS.map(
+          (taskId) =>
+            this.prepareListItem(TASKS.find(task => task.taskId === taskId),
+              false)
+        ),
     });
   }
   
@@ -38,10 +44,10 @@ class Main extends React.Component {
   incrementClock = () => {
     const timeoutId = setTimeout(() => {
       this.setState({
-        time: addMinutes(this.state.time, CLOCK_INCREMENT_INTERVAL_MINUTES)
+        time: addHours(this.state.time, CLOCK_INCREMENT_INTERVAL_HOURS)
       });
       this.incrementClock();
-    }, GAME_MINUTE_LENGTH * CLOCK_INCREMENT_INTERVAL_MINUTES);
+    }, GAME_HOUR_LENGTH * CLOCK_INCREMENT_INTERVAL_HOURS);
     this.setState({
       timers: Object.assign({}, this.state.timers, { clock: [timeoutId] })
     });
@@ -60,7 +66,7 @@ class Main extends React.Component {
       const timeoutIds = [];
       item.spawnsOnAge.forEach(spawn => {
         const timeoutId = setTimeout(() => {
-          const spawnedItem = ITEMS.find(i => i.taskId === spawn.taskId);
+          const spawnedItem = TASKS.find(i => i.taskId === spawn.taskId);
           let newList = this.state.list;
           if (spawn.killParent) {
             // need to kill parent's running timers too probably!
@@ -69,7 +75,7 @@ class Main extends React.Component {
           this.setState({
             list: newList.concat(this.prepareListItem(spawnedItem, true))
           });
-        }, spawn.age * GAME_MINUTE_LENGTH);
+        }, spawn.age * GAME_HOUR_LENGTH);
         timeoutIds.push(timeoutId);
       });
       if (timeoutIds.length) {
@@ -100,13 +106,13 @@ class Main extends React.Component {
       item.spawnsOnDone.forEach(taskToSpawn => {
         // these timeout ids should be stored for possible cancellation
         setTimeout(() => {
-          const spawnedItem = INITIAL_TASKS.concat(ITEMS)
+          const spawnedItem = TASKS
             .find(i => i.taskId === taskToSpawn.taskId);
           this.setState({
             list: this.state.list
                     .concat(this.prepareListItem(spawnedItem, true))
           });
-        }, taskToSpawn.delay * GAME_MINUTE_LENGTH);
+        }, taskToSpawn.delay * GAME_HOUR_LENGTH);
       });
     }
     // disappear after a while
