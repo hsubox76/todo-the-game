@@ -11,8 +11,8 @@ import {
 import { INITIAL_TASK_IDS, TASKS } from '../data/tasks';
 
 class Main extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.lastId = 0;
     this.state = {
       list: [],
@@ -24,6 +24,9 @@ class Main extends React.Component {
   
   componentDidMount() {
     this.incrementClock();
+    this.props.db.collection('tasks').get().then(snapshot => {
+      snapshot.forEach(task => console.log(`${task.id} => ${JSON.stringify(task.data())}`));
+    });
     this.setState({
       list: INITIAL_TASK_IDS.map(
           (taskId) =>
