@@ -1,0 +1,57 @@
+.task-edit-box {
+  border: 1px solid grey;
+  padding: 5px;
+  margin: 5px;
+}
+
+.form-row {
+  margin: 5px 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.form-row label {
+  margin-right: 5px;
+}
+
+.spawn-box {
+  padding: 5px;
+  margin: 0 5px;
+  background-color: steelblue;
+  display: flex;
+}
+
+.spawn-box > div {
+  padding: 5px;
+  margin: 0 5px;
+  border: 1px solid blue;
+  background-color: white;
+}
+
+textarea[name="description"] {
+  width: 400px;
+}
+
+.input-day {
+  width: 15px;
+}
+
+.cancel-button {
+  background-color: #666;
+  color: #fff;
+  padding: 2px;
+  width: 60px;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.spawn-box .remove-button {
+  background-color: #666;
+  color: #fff;
+  padding: 2px;
+  width: 60px;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 5px;
+}

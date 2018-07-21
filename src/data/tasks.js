@@ -20,7 +20,7 @@
 
 export const INITIAL_TASK_IDS = [1, 2, 3];
 
-const DAY = 24;
+export const DAY = 24;
 
 export const TASKS = [
   {
