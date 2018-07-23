@@ -57,12 +57,13 @@ class Admin extends React.Component {
             const spawn = this.state.spawnToAdd;
             const taskIndex = spawn.taskIndex;
             updates[spawn.type.name] = this.state.tasks[taskIndex][spawn.type.name] || [];
-            let newId = spawn.id;
+            const newSpawnItem = { [spawn.type.timeField]: spawn.days * DAY };
+            newSpawnItem.taskId = spawn.id;
+            if (spawn.type.name === SPAWN_TYPE.ON_AGE.name) {
+                newSpawnItem.killParent = spawn.killParent
+            }
             // put other cases here
-            updates[spawn.type.name].push({
-                [spawn.type.timeField]: spawn.days * DAY,
-                taskId: newId
-            });
+            updates[spawn.type.name].push(newSpawnItem);
         }
         this.props.db.collection('tasks').doc(id).update(updates).then(() => {
            this.setState({ updates: null, taskIdBeingEdited: null }); 
@@ -84,8 +85,15 @@ class Admin extends React.Component {
         });
     }
     onDaysChange = (e, type, list, index) => {
-        const field = type === SPAWN_TYPE.ON_DONE ? 'delay' : 'age';
-        list[index][field] = DAY * parseInt(e.target.value, 10);
+        list[index][type.timeField] = DAY * parseInt(e.target.value, 10);
+        this.setState({
+            updates: Object.assign({}, this.state.updates, {
+                [type.name]: list
+            })
+        });
+    }
+    onKillParentChange = (e, type, list, index) => {
+        list[index].killParent = e.target.checked;
         this.setState({
             updates: Object.assign({}, this.state.updates, {
                 [type.name]: list
@@ -101,7 +109,8 @@ class Admin extends React.Component {
                 type,
                 method: 'copy',
                 days: 1,
-                id: task.taskId
+                id: task.taskId,
+                killParent: true
             }
         });
     }
@@ -168,7 +177,7 @@ class Admin extends React.Component {
     renderSpawns = (task, isEditable, type = SPAWN_TYPE.ON_DONE) => {
         const spawnBoxes = task[type.name] ? task[type.name].map((spawn, index) => {
             const spawnTask = this.state.tasks.find(task => task.taskId === spawn.taskId);
-            const displayText = spawnTask ? spawnTask.description.substring(0, 20) : spawn.taskId;
+            const displayText = spawnTask ? spawnTask.description.substring(0, 30) : spawn.taskId;
             let timeElement = null;
             let removeButton = null;
             if (isEditable) {
@@ -178,6 +187,7 @@ class Admin extends React.Component {
                         {isEditable ? (
                             <input
                                 className="input-day"
+                                type="number"
                                 name={"spawn-delay-" + task.taskId + '-' + spawn.taskId}
                                 defaultValue={spawn[type.timeField] / DAY}
                                 onChange={(e) => this.onDaysChange(e, type, task[type.name], index)}
@@ -201,6 +211,22 @@ class Admin extends React.Component {
                 );
             }
             
+            let killParentElement = null;
+            if (type.name === SPAWN_TYPE.ON_AGE.name) {
+                let statusIndicator = spawn.killParent ? 'yes' : 'no';
+                if (isEditable) {
+                    statusIndicator = (
+                        <input
+                            type="checkbox"
+                            checked={spawn.killParent}
+                            onChange={(e) => this.onKillParentChange(e, type, task[type.name], index)}
+                        />
+                    );
+                }
+                killParentElement = (
+                    <div>Kills parent? {statusIndicator}</div>
+                );
+            }
             const classes = ['spawn-box', 'spawn-box-' + type.class];
             return (
                 <div
@@ -209,9 +235,10 @@ class Admin extends React.Component {
                 >
                     <div className="task-link" onClick={() => this.onClickSpawn(task.taskId, spawn.taskId)}>{displayText}</div>
                     {timeElement}
+                    {killParentElement}
                     {removeButton}
                 </div>
-            )
+            );
         }): [];
         if (isEditable) {
             if (this.state.spawnToAdd && this.state.spawnToAdd.taskId === task.taskId && this.state.spawnToAdd.type === type) {
@@ -261,10 +288,19 @@ class Admin extends React.Component {
                             <span className="spawn-label">spawn after {type.timeField}:</span>
                             <input
                                 className="input-day"
+                                type="number"
                                 value={this.state.spawnToAdd.days}
                                 onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {days: parseInt(e.target.value, 10)})})}
                             />
                             <span className='spawn-timeunit'>days</span>
+                        </div>
+                        <div>
+                            <span className="spawn-label">Kill parent on spawn:</span>
+                            <input
+                                type="checkbox"
+                                checked={this.state.spawnToAdd.killParent}
+                                onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {killParent: e.target.checked})})}
+                            />
                         </div>
                     </div>
                 );

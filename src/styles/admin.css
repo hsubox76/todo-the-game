@@ -5,7 +5,7 @@
 }
 
 .task-edit-box.dirty {
-  background-color: #ffefee;
+  background-color: #afd9ff;
 }
 
 .form-row {
@@ -55,7 +55,27 @@ textarea[name="description"] {
 }
 
 .input-day {
-  width: 15px;
+  width: 30px;
+  font-size: 16px;
+  padding: 5px;
+}
+
+button,
+.div-button {
+  background-color: #666;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button {
+  background-color: seagreen;
 }
 
 .cancel-button {
@@ -74,17 +94,8 @@ textarea[name="description"] {
 }
 
 .add-button {
-  background-color: seagreen;
+  background-color: purple;
   height: 25px;
-}
-
-.div-button {
-  padding: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
 }
 
 .spawn-timeunit {
@@ -93,5 +104,19 @@ textarea[name="description"] {
 
 .spawn-label {
   text-transform: capitalize;
+  margin-right: 5px;
 }
 
+.new-spawn-form {
+  border: 1px solid grey;
+  padding: 5px;
+  background-color: #efefef;
+}
+
+.new-spawn-form > div {
+  padding: 5px 0;
+}
+
+.new-spawn-form > div:not(:first-child) {
+  border-top: 1px solid #ccc;
+}
