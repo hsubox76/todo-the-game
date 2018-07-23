@@ -62,12 +62,19 @@ class Admin extends React.Component {
             if (spawn.type.name === SPAWN_TYPE.ON_AGE.name) {
                 newSpawnItem.killParent = spawn.killParent
             }
-            // put other cases here
+            //TODO: handle create
             updates[spawn.type.name].push(newSpawnItem);
         }
-        this.props.db.collection('tasks').doc(id).update(updates).then(() => {
-           this.setState({ updates: null, taskIdBeingEdited: null }); 
-        });
+        if (id === 'new') {
+            updates.taskId = this.props.db.collection('tasks').doc().id;
+            this.props.db.collection('tasks').doc(updates.taskId).set(updates).then(() => {
+               this.setState({ updates: null, taskIdBeingEdited: null }); 
+            });
+        } else {
+            this.props.db.collection('tasks').doc(id).update(updates).then(() => {
+               this.setState({ updates: null, taskIdBeingEdited: null }); 
+            });
+        }
     }
     onEditTask = (e, id) => {
         e.preventDefault();
@@ -112,6 +119,18 @@ class Admin extends React.Component {
                 id: task.taskId,
                 killParent: true
             }
+        });
+    }
+    onCreateClick = () => {
+        const newTask = {
+            taskId: 'new',
+            description: 'new task',
+            isVisible: true,
+            taskIdBeingEdited: 'new'
+        };
+        this.setState({
+            tasks: [newTask].concat(this.state.tasks),
+            updates: { description: 'new task' }
         });
     }
     onNewSpawnMethodChange = (e) => {
@@ -331,7 +350,7 @@ class Admin extends React.Component {
             }
             const classes = ['task-edit-box'];
             const isEditable = task.taskId === this.state.taskIdBeingEdited;
-            let descriptionEl = <div>{task.description}</div>;
+            let descriptionEl = <div className="description-text">{task.description}</div>;
             if (isEditable) {
                 descriptionEl = (<textarea
                             name="description"
@@ -353,7 +372,7 @@ class Admin extends React.Component {
             return (
                 <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
                     {parentLink}
-                    <div>ID: {task.taskId}</div>
+                    <div>{task.taskId === 'new' ? 'Create New Task' : ('ID: ' + task.taskId)}</div>
                     <div className="form-row">
                         <input name="taskId" type="hidden" value={task.taskId}/>
                     </div>
@@ -396,6 +415,7 @@ class Admin extends React.Component {
         return (
           <div className="admin-container">
               <button onClick={this.populateFirebaseFromLocal}>init firebase from local defaults</button>
+              <button onClick={this.onCreateClick}>create new task</button>
               {this.state.tasks && this.renderTaskList()}
           </div>
         );

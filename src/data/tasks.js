@@ -32,7 +32,6 @@ export const TASKS = [
     spawnsOnAge: [
       { age: 3 * DAY, taskId: 4, killParent: true }
     ]
-    
   },
   { taskId: 2, description: 'Call mom' },
   {
