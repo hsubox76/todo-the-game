@@ -30,7 +30,7 @@ const UI_CONFIG = {
 class Admin extends React.Component {
     constructor() {
         super();
-        this.state = { user: null, loading: true, updates: {} };
+        this.state = { user: null, loading: true, updates: null };
     }
     componentDidMount() {
         firebase.auth().onAuthStateChanged((user) => {
@@ -52,7 +52,7 @@ class Admin extends React.Component {
     }
     onUpdateTask = (id) => {
         this.props.db.collection('tasks').doc(id).update(this.state.updates).then(() => {
-           this.setState({ updates: {}, taskIdBeingEdited: null }); 
+           this.setState({ updates: null, taskIdBeingEdited: null }); 
         });
     }
     onEditTask = (e, id) => {
@@ -199,6 +199,7 @@ class Admin extends React.Component {
             if (!task.isVisible) {
                 return null;
             }
+            const classes = ['task-edit-box'];
             const isEditable = task.taskId === this.state.taskIdBeingEdited;
             let descriptionEl = <div>{task.description}</div>;
             if (isEditable) {
@@ -208,9 +209,12 @@ class Admin extends React.Component {
                             defaultValue={task.description}
                             onChange={this.onDescriptionChange}
                         />);
+                if (this.state.updates) {
+                    classes.push('dirty');
+                }
             }
             return (
-                <form className="task-edit-box" key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
+                <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
                     <div>ID: {task.taskId}</div>
                     <div className="form-row">
                         <input name="taskId" type="hidden" value={task.taskId}/>
@@ -229,7 +233,7 @@ class Admin extends React.Component {
                     </div>
                     <div className="form-row">
                         <button>{isEditable ? 'update' : 'edit'}</button>
-                        {isEditable && <div className="cancel-button" onClick={() => this.setState({ updates: {}, taskIdBeingEdited: null })}>cancel</div>}
+                        {isEditable && <div className="cancel-button" onClick={() => this.setState({ taskIdBeingEdited: null })}>cancel</div>}
                     </div>
                 </form>
               );
