@@ -57,7 +57,7 @@ class Admin extends React.Component {
             const spawn = this.state.spawnToAdd;
             const taskIndex = spawn.taskIndex;
             updates[spawn.type.name] = this.state.tasks[taskIndex][spawn.type.name] || [];
-            const newSpawnItem = { [spawn.type.timeField]: spawn.days * DAY };
+            const newSpawnItem = {[spawn.type.timeField]: spawn.days * DAY};
             newSpawnItem.taskId = spawn.id;
             if (spawn.type.name === SPAWN_TYPE.ON_AGE.name) {
                 newSpawnItem.killParent = spawn.killParent
@@ -138,14 +138,20 @@ class Admin extends React.Component {
             tasks: newTasks
         });
     }
-    onClickSpawn = (oldId, spawnId) => {
-        //TODO: Leave a link back to the parent!
+    onClickSpawn = (oldId, spawnId, toSpawn = true) => {
+        if (oldId === spawnId) {
+            return;
+        }
         this.setState({
             tasks: this.state.tasks.map(task => {
                if (task.taskId === oldId) {
                    return Object.assign({}, task, {isVisible: false});
                } else if (task.taskId === spawnId) {
-                   return Object.assign({}, task, {isVisible: true});
+                   const propsToAdd = {isVisible: true};
+                   if (toSpawn) {
+                       propsToAdd.parentId = oldId;
+                   }
+                   return Object.assign({}, task, propsToAdd);
                }
                return task;
             })
@@ -162,12 +168,12 @@ class Admin extends React.Component {
             }
             if (task.spawnsOnDone) {
                 task.spawnsOnDone.forEach(spawnedTask => {
-                   spawnedTask.taskId = idMap[spawnedTask.taskId]; 
+                   spawnedTask.taskId = idMap[spawnedTask.taskId];
                 });
             }
             if (task.spawnsOnAge) {
                 task.spawnsOnAge.forEach(spawnedTask => {
-                   spawnedTask.taskId = idMap[spawnedTask.taskId]; 
+                   spawnedTask.taskId = idMap[spawnedTask.taskId];
                 });
             }
             task.taskId = idMap[task.taskId];
@@ -337,8 +343,16 @@ class Admin extends React.Component {
                     classes.push('dirty');
                 }
             }
+            let parentLink = null;
+            if (task.parentId) {
+                const parentDesc = this.state.tasks.find(t => t.taskId === task.parentId).description;
+                parentLink = (
+                    <div className="parent-link" onClick={() => this.onClickSpawn(task.taskId, task.parentId, false)}>back to "{parentDesc}"</div>
+                );
+            }
             return (
                 <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
+                    {parentLink}
                     <div>ID: {task.taskId}</div>
                     <div className="form-row">
                         <input name="taskId" type="hidden" value={task.taskId}/>
