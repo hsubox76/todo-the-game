@@ -1,5 +1,6 @@
 import React from 'react';
 import firebase from 'firebase/app';
+import { SPAWN_TYPE } from '../data/constants';
 import { DAY, TASKS, INITIAL_TASK_IDS } from '../data/tasks';
 import '../styles/admin.css';
 
@@ -51,7 +52,19 @@ class Admin extends React.Component {
         });
     }
     onUpdateTask = (id) => {
-        this.props.db.collection('tasks').doc(id).update(this.state.updates).then(() => {
+        const updates = this.state.updates || {};
+        if (this.state.spawnToAdd) {
+            const spawn = this.state.spawnToAdd;
+            const taskIndex = spawn.taskIndex;
+            updates[spawn.type.name] = this.state.tasks[taskIndex][spawn.type.name] || [];
+            let newId = spawn.id;
+            // put other cases here
+            updates[spawn.type.name].push({
+                [spawn.type.timeField]: spawn.days * DAY,
+                taskId: newId
+            });
+        }
+        this.props.db.collection('tasks').doc(id).update(updates).then(() => {
            this.setState({ updates: null, taskIdBeingEdited: null }); 
         });
     }
@@ -71,28 +84,47 @@ class Admin extends React.Component {
         });
     }
     onDaysChange = (e, type, list, index) => {
-        const field = type === 'spawnsOnDone' ? 'delay' : 'age';
+        const field = type === SPAWN_TYPE.ON_DONE ? 'delay' : 'age';
         list[index][field] = DAY * parseInt(e.target.value, 10);
         this.setState({
             updates: Object.assign({}, this.state.updates, {
-                [type]: list
+                [type.name]: list
             })
+        });
+    }
+    onAddClick = (type, task) => {
+        const taskIndex = this.state.tasks.findIndex(t => t.taskId === task.taskId);
+        this.setState({
+            spawnToAdd: {
+                taskId: task.taskId,
+                taskIndex,
+                type,
+                method: 'copy',
+                days: 1,
+                id: task.taskId
+            }
+        });
+    }
+    onNewSpawnMethodChange = (e) => {
+        const method = e.target ? e.target.value : e;
+        this.setState({
+            spawnToAdd: Object.assign({}, this.state.spawnToAdd, { method })
         });
     }
     onRemoveSpawn = (e, type, task, index) => {
         let newList;
-        if (task[type].length === 1) {
+        if (task[type.name].length === 1) {
             newList = null;
         } else {
-            newList = task[type].slice(0, index).concat(task[type.slice(index + 1)]);
+            newList = task[type.name].slice(0, index).concat(task[type.name].slice(index + 1));
         }
         const taskIndex = this.state.tasks.findIndex(t => t.taskId === task.taskId);
         const newTasks = this.state.tasks.slice(0, taskIndex)
-            .concat(Object.assign({}, task, {[type]: newList}))
+            .concat(Object.assign({}, task, {[type.name]: newList}))
             .concat(this.state.tasks.slice(taskIndex + 1));
         this.setState({
             updates: Object.assign({}, this.state.updates, {
-                [type]: newList
+                [type.name]: newList
             }),
             tasks: newTasks
         });
@@ -133,64 +165,120 @@ class Admin extends React.Component {
             this.props.db.collection('tasks').doc(task.taskId).set(task);
         });
     }
-    renderSpawns = (task, isEditable, type = 'spawnsOnDone') => {
-        const spawnBoxes = task[type] ? task[type].map((spawn, index) => {
+    renderSpawns = (task, isEditable, type = SPAWN_TYPE.ON_DONE) => {
+        const spawnBoxes = task[type.name] ? task[type.name].map((spawn, index) => {
             const spawnTask = this.state.tasks.find(task => task.taskId === spawn.taskId);
             const displayText = spawnTask ? spawnTask.description.substring(0, 20) : spawn.taskId;
             let timeElement = null;
             let removeButton = null;
-            const label = type === 'spawnsOnDone' ? 'Delay:' : 'Age:';
-            const field = type === 'spawnsOnDone' ? 'delay' : 'age';
             if (isEditable) {
                 timeElement = (
                     <div>
-                        Delay:
+                        <span className='spawn-label'>{type.timeField + ': '}</span>
                         {isEditable ? (
                             <input
                                 className="input-day"
                                 name={"spawn-delay-" + task.taskId + '-' + spawn.taskId}
-                                defaultValue={spawn[field] / DAY}
-                                onChange={(e) => this.onDaysChange(e, type, task[type], index)}
+                                defaultValue={spawn[type.timeField] / DAY}
+                                onChange={(e) => this.onDaysChange(e, type, task[type.name], index)}
                             />
                         ) : (
-                            <span>{spawn[field] / DAY}</span>
+                            <span>{spawn[type.timeField] / DAY}</span>
                         )}
-                        days
+                        <span className='spawn-timeunit'>days</span>
                     </div>
                 );
                 removeButton = (
-                    <div className="remove-button" onClick={e => this.onRemoveSpawn(e, type, task, index)}>remove</div>
+                    <div className="div-button remove-button" onClick={e => this.onRemoveSpawn(e, type, task, index)}>remove</div>
                 );
             } else {
                 timeElement = (
                     <div>
-                        {label}
-                        {spawn[field] / DAY}
-                        days
+                        <span className='spawn-label'>{type.timeField + ': '}</span>
+                        <span className='spawn-timespan'>{spawn[type.timeField] / DAY}</span>
+                        <span className='spawn-timeunit'>days</span>
                     </div>
                 );
             }
             
+            const classes = ['spawn-box', 'spawn-box-' + type.class];
             return (
                 <div
                     key={task.taskId + '-' + spawn.taskId}
-                    className="spawn-box"
+                    className={classes.join(' ')}
                 >
-                    <div onClick={() => this.onClickSpawn(task.taskId, spawn.taskId)}>{displayText}</div>
+                    <div className="task-link" onClick={() => this.onClickSpawn(task.taskId, spawn.taskId)}>{displayText}</div>
                     {timeElement}
                     {removeButton}
                 </div>
             )
         }): [];
         if (isEditable) {
-            spawnBoxes.push(
-                <div
-                    key={task.taskId + '-new'}
-                    className="spawn-box"
-                >
-                    add
-                </div>
-            );
+            if (this.state.spawnToAdd && this.state.spawnToAdd.taskId === task.taskId && this.state.spawnToAdd.type === type) {
+                const currentMethod = this.state.spawnToAdd && this.state.spawnToAdd.method;
+                spawnBoxes.push(
+                    <div
+                        key={task.taskId + '-new'}
+                        className="new-spawn-form"
+                    >
+                        <div className="check-row">
+                            <input
+                                type="radio"
+                                name="new-spawn-type"
+                                value="copy"
+                                onChange={this.onNewSpawnMethodChange}
+                                checked={currentMethod === 'copy'}
+                            />
+                            spawn copy
+                        </div>
+                        <div className="check-row">
+                            <input
+                                type="radio"
+                                name="new-spawn-type"
+                                value="new"
+                                onChange={this.onNewSpawnMethodChange}
+                                checked={currentMethod === 'new'}
+                            />
+                            create new
+                        </div>
+                        <div className="check-row">
+                            <input
+                                type="radio"
+                                name="new-spawn-type"
+                                value="id"
+                                onChange={this.onNewSpawnMethodChange}
+                                checked={currentMethod === 'id'}
+                            />
+                            select existing (enter id)
+                            <input
+                                className="input-id"
+                                value={this.state.spawnToAdd.id === task.taskId ? '(self)' : this.state.spawnToAdd.id}
+                                onFocus={() => this.onNewSpawnMethodChange('id')}
+                                onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {id: e.target.value})})}
+                            />
+                        </div>
+                        <div>
+                            <span className="spawn-label">spawn after {type.timeField}:</span>
+                            <input
+                                className="input-day"
+                                value={this.state.spawnToAdd.days}
+                                onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {days: parseInt(e.target.value, 10)})})}
+                            />
+                            <span className='spawn-timeunit'>days</span>
+                        </div>
+                    </div>
+                );
+            } else {
+                spawnBoxes.push(
+                    <div
+                        key={task.taskId + '-new'}
+                        className="div-button add-button"
+                        onClick={() => this.onAddClick(type, task)}
+                    >
+                        add task to spawn on {type.class}
+                    </div>
+                );
+            }
         }
         return spawnBoxes;
     }
@@ -209,7 +297,7 @@ class Admin extends React.Component {
                             defaultValue={task.description}
                             onChange={this.onDescriptionChange}
                         />);
-                if (this.state.updates) {
+                if (this.state.updates || this.state.spawnToAdd) {
                     classes.push('dirty');
                 }
             }
@@ -223,17 +311,17 @@ class Admin extends React.Component {
                         <label htmlFor="description">Description:</label>
                         {descriptionEl}
                     </div>
-                    <div className="form-row">
+                    <div className="form-row stack">
                         <label>Spawns On Done:</label>
-                        {this.renderSpawns(task, isEditable, 'spawnsOnDone')}
+                        {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_DONE)}
                     </div>
-                    <div className="form-row">
+                    <div className="form-row stack">
                         <label>Spawns On Age:</label>
-                        {this.renderSpawns(task, isEditable, 'spawnsOnAge')}
+                        {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_AGE)}
                     </div>
                     <div className="form-row">
                         <button>{isEditable ? 'update' : 'edit'}</button>
-                        {isEditable && <div className="cancel-button" onClick={() => this.setState({ taskIdBeingEdited: null })}>cancel</div>}
+                        {isEditable && <div className="div-button cancel-button" onClick={() => this.setState({ updates: null, spawnToAdd: null, taskIdBeingEdited: null })}>cancel</div>}
                     </div>
                 </form>
               );

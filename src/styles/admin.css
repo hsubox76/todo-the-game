@@ -14,22 +14,40 @@
   align-items: flex-start;
 }
 
+.form-row.stack {
+  flex-direction: column;
+}
+
 .form-row label {
   margin-right: 5px;
 }
 
 .spawn-box {
   padding: 5px;
-  margin: 0 5px;
-  background-color: steelblue;
+  margin: 5px 0;
   display: flex;
+}
+
+.spawn-box-age {
+  background-color: steelblue;
+}
+
+.spawn-box-done {
+  background-color: yellowgreen;
 }
 
 .spawn-box > div {
   padding: 5px;
   margin: 0 5px;
-  border: 1px solid blue;
-  background-color: white;
+  background-color: #efefef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-link:hover {
+  background-color: #fff;
+  cursor: pointer;
 }
 
 textarea[name="description"] {
@@ -43,20 +61,37 @@ textarea[name="description"] {
 .cancel-button {
   background-color: #666;
   color: #fff;
-  padding: 2px;
   width: 60px;
-  text-align: center;
-  cursor: pointer;
   margin-left: 5px;
 }
 
 .spawn-box .remove-button {
   background-color: #666;
   color: #fff;
-  padding: 2px;
   width: 60px;
-  text-align: center;
   cursor: pointer;
   margin-left: 5px;
+}
+
+.add-button {
+  background-color: seagreen;
+  height: 25px;
+}
+
+.div-button {
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.spawn-timeunit {
+  margin-left: 5px;
+}
+
+.spawn-label {
+  text-transform: capitalize;
 }
 
