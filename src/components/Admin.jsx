@@ -53,6 +53,7 @@ class Admin extends React.Component {
     }
     onUpdateTask = (id) => {
         const updates = this.state.updates || {};
+        updates.isVisible = true;
         if (this.state.spawnToAdd) {
             const spawn = this.state.spawnToAdd;
             const taskIndex = spawn.taskIndex;
@@ -67,12 +68,26 @@ class Admin extends React.Component {
         }
         if (id === 'new') {
             updates.taskId = this.props.db.collection('tasks').doc().id;
+            if (updates.spawnsOnDone) {
+                updates.spawnsOnDone.forEach(spawnedTask => {
+                    if (spawnedTask.taskId === 'new') {
+                        spawnedTask.taskId = updates.taskId;
+                    }
+                });
+            }
+            if (updates.spawnsOnAge) {
+                updates.spawnsOnAge.forEach(spawnedTask => {
+                    if (spawnedTask.taskId === 'new') {
+                        spawnedTask.taskId = updates.taskId;
+                    }
+                });
+            }
             this.props.db.collection('tasks').doc(updates.taskId).set(updates).then(() => {
-               this.setState({ updates: null, taskIdBeingEdited: null }); 
+               this.setState({ updates: null, taskIdBeingEdited: null });
             });
         } else {
             this.props.db.collection('tasks').doc(id).update(updates).then(() => {
-               this.setState({ updates: null, taskIdBeingEdited: null }); 
+               this.setState({ updates: null, taskIdBeingEdited: null });
             });
         }
     }
@@ -137,10 +152,11 @@ class Admin extends React.Component {
         const newTask = {
             taskId: 'new',
             description: 'new task',
-            isVisible: true,
-            taskIdBeingEdited: 'new'
+            isVisible: true
         };
         this.setState({
+            spawnToAdd: null,
+            taskIdBeingEdited: 'new',
             tasks: [newTask].concat(this.state.tasks),
             updates: { description: 'new task' }
         });
@@ -293,7 +309,7 @@ class Admin extends React.Component {
             const classes = ['spawn-box', 'spawn-box-' + type.class];
             return (
                 <div
-                    key={task.taskId + '-' + spawn.taskId}
+                    key={task.taskId + '-' + spawn.taskId + '-' + index}
                     className={classes.join(' ')}
                 >
                     <div className="task-link" onClick={() => this.onClickSpawn(task.taskId, spawn.taskId)}>{displayText}</div>
