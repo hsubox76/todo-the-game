@@ -85,6 +85,18 @@ class Admin extends React.Component {
         }
     }
     onDescriptionChange = (e) => {
+        const task = this.state.tasks.find(t => t.taskId === this.state.taskIdBeingEdited);
+        if (task.description === e.target.value) {
+            let descRemoved = Object.assign({}, this.state.updates);
+            delete descRemoved.description;
+            if (Object.keys(descRemoved).length === 0) {
+                descRemoved = null;
+            }
+            this.setState({
+                updates: descRemoved
+            });
+            return;
+        }
         this.setState({
             updates: Object.assign({}, this.state.updates, {
                 description: e.target.value
@@ -131,6 +143,29 @@ class Admin extends React.Component {
         this.setState({
             tasks: [newTask].concat(this.state.tasks),
             updates: { description: 'new task' }
+        });
+    }
+    // commit adding new spawn to task (don't hit firebase yet, just add to updates)
+    onCommitClick = (e) => {
+        e.preventDefault();
+        const updates = this.state.updates || {};
+        const spawn = this.state.spawnToAdd;
+        const taskIndex = spawn.taskIndex;
+        updates[spawn.type.name] = this.state.tasks[taskIndex][spawn.type.name] || [];
+        const newSpawnItem = {[spawn.type.timeField]: spawn.days * DAY};
+        newSpawnItem.taskId = spawn.id;
+        if (spawn.type.name === SPAWN_TYPE.ON_AGE.name) {
+            newSpawnItem.killParent = spawn.killParent
+        }
+        //TODO: handle create
+        updates[spawn.type.name].push(newSpawnItem);
+        const newTasks = this.state.tasks.slice(0, taskIndex)
+            .concat(Object.assign({}, this.state.tasks[taskIndex], {[spawn.type.name]: updates[spawn.type.name]}))
+            .concat(this.state.tasks.slice(taskIndex + 1));
+        this.setState({
+            tasks: newTasks,
+            updates,
+            spawnToAdd: null
         });
     }
     onNewSpawnMethodChange = (e) => {
@@ -202,7 +237,10 @@ class Admin extends React.Component {
     renderSpawns = (task, isEditable, type = SPAWN_TYPE.ON_DONE) => {
         const spawnBoxes = task[type.name] ? task[type.name].map((spawn, index) => {
             const spawnTask = this.state.tasks.find(task => task.taskId === spawn.taskId);
-            const displayText = spawnTask ? spawnTask.description.substring(0, 30) : spawn.taskId;
+            let displayText = spawnTask ? spawnTask.description.substring(0, 30) : spawn.taskId;
+            if (spawn.taskId === task.taskId) {
+                displayText = '(self)';
+            }
             let timeElement = null;
             let removeButton = null;
             if (isEditable) {
@@ -268,6 +306,16 @@ class Admin extends React.Component {
         if (isEditable) {
             if (this.state.spawnToAdd && this.state.spawnToAdd.taskId === task.taskId && this.state.spawnToAdd.type === type) {
                 const currentMethod = this.state.spawnToAdd && this.state.spawnToAdd.method;
+                const killParentElement = type.name === SPAWN_TYPE.ON_AGE.name && (
+                    <div>
+                        <span className="spawn-label">Kill parent on spawn:</span>
+                        <input
+                            type="checkbox"
+                            checked={this.state.spawnToAdd.killParent}
+                            onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {killParent: e.target.checked})})}
+                        />
+                    </div>
+                );
                 spawnBoxes.push(
                     <div
                         key={task.taskId + '-new'}
@@ -304,7 +352,8 @@ class Admin extends React.Component {
                             select existing (enter id)
                             <input
                                 className="input-id"
-                                value={this.state.spawnToAdd.id === task.taskId ? '(self)' : this.state.spawnToAdd.id}
+                                value={this.state.spawnToAdd.id === task.taskId ? '' : this.state.spawnToAdd.id}
+                                placeholder="(self)"
                                 onFocus={() => this.onNewSpawnMethodChange('id')}
                                 onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {id: e.target.value})})}
                             />
@@ -319,13 +368,22 @@ class Admin extends React.Component {
                             />
                             <span className='spawn-timeunit'>days</span>
                         </div>
-                        <div>
-                            <span className="spawn-label">Kill parent on spawn:</span>
-                            <input
-                                type="checkbox"
-                                checked={this.state.spawnToAdd.killParent}
-                                onChange={(e) => this.setState({ spawnToAdd: Object.assign({}, this.state.spawnToAdd, {killParent: e.target.checked})})}
-                            />
+                        {killParentElement}
+                        <div className="new-spawn-button-row">
+                            <button
+                                type="nosubmit"
+                                className="commit-spawn-button"
+                                onClick={this.onCommitClick}
+                            >
+                                add it
+                            </button>
+                            <button
+                                type="nosubmit"
+                                className="cancel-button"
+                                onClick={() => this.setState({ spawnToAdd: null })}
+                            >
+                                cancel
+                            </button>
                         </div>
                     </div>
                 );
@@ -336,7 +394,7 @@ class Admin extends React.Component {
                         className="div-button add-button"
                         onClick={() => this.onAddClick(type, task)}
                     >
-                        add task to spawn on {type.class}
+                        <span className='symbol'>+</span> add {type.class} spawn
                     </div>
                 );
             }
@@ -369,6 +427,8 @@ class Admin extends React.Component {
                     <div className="parent-link" onClick={() => this.onClickSpawn(task.taskId, task.parentId, false)}>back to "{parentDesc}"</div>
                 );
             }
+            const disableButtons = !!this.state.spawnToAdd;
+            const disableUpdate = isEditable && !this.state.updates;
             return (
                 <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
                     {parentLink}
@@ -389,8 +449,21 @@ class Admin extends React.Component {
                         {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_AGE)}
                     </div>
                     <div className="form-row">
-                        <button>{isEditable ? 'update' : 'edit'}</button>
-                        {isEditable && <div className="div-button cancel-button" onClick={() => this.setState({ updates: null, spawnToAdd: null, taskIdBeingEdited: null })}>cancel</div>}
+                        <button
+                            className={disableButtons || disableUpdate ? 'disabled' : ''}
+                            disabled={disableButtons || disableUpdate}
+                        >
+                            {isEditable ? 'update' : 'edit'}
+                        </button>
+                        {isEditable &&
+                            <button
+                                type="nosubmit"
+                                className={"cancel-button" + (disableButtons ? ' disabled' : '')}
+                                disabled={disableButtons}
+                                onClick={() => this.setState({ updates: null, spawnToAdd: null, taskIdBeingEdited: null })}
+                            >
+                                cancel
+                            </button>}
                     </div>
                 </form>
               );
