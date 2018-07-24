@@ -6,9 +6,9 @@ import ListBox from './ListBox';
 import {
   PALETTES,
   GAME_HOUR_LENGTH,
-  CLOCK_INCREMENT_INTERVAL_HOURS
+  CLOCK_INCREMENT_INTERVAL_HOURS,
+  FIRESTORE_COLLECTION
 } from '../data/constants';
-import { INITIAL_TASK_IDS, TASKS } from '../data/tasks';
 
 class Main extends React.Component {
   constructor(props) {
@@ -25,14 +25,14 @@ class Main extends React.Component {
   componentDidMount() {
     this.incrementClock();
     this.props.db.collection('tasks').get().then(snapshot => {
-      snapshot.forEach(task => console.log(`${task.id} => ${JSON.stringify(task.data())}`));
-    });
-    this.setState({
-      list: INITIAL_TASK_IDS.map(
-          (taskId) =>
-            this.prepareListItem(TASKS.find(task => task.taskId === taskId),
-              false)
-        ),
+      const list = [];
+      snapshot.forEach(taskDoc => {
+        const task = taskDoc.data();
+        if (task.isInitial) {
+          list.push(this.prepareListItem(task));
+        }
+      });
+      this.setState({ list });
     });
   }
   
@@ -66,26 +66,28 @@ class Main extends React.Component {
   prepareListItem = (item, fadeIn = false) => {
     const id = this.lastId++;
     if (item.spawnsOnAge) {
-      const timeoutIds = [];
       item.spawnsOnAge.forEach(spawn => {
-        const timeoutId = setTimeout(() => {
-          const spawnedItem = TASKS.find(i => i.taskId === spawn.taskId);
-          let newList = this.state.list;
-          if (spawn.killParent) {
-            // need to kill parent's running timers too probably!
-            newList = this.removeItemWithId(id);
-          }
-          this.setState({
-            list: newList.concat(this.prepareListItem(spawnedItem, true))
+        this.props.db.collection(FIRESTORE_COLLECTION.TASKS)
+          .doc(spawn.taskId)
+          .get()
+          .then(doc => {
+            const timeoutId = setTimeout(() => {
+              let newList = this.state.list;
+              if (spawn.killParent) {
+                // need to kill parent's running timers too probably!
+                newList = this.removeItemWithId(id);
+              }
+              this.setState({
+                list: newList.concat(this.prepareListItem(doc.data(), true))
+              });
+            }, spawn.age * GAME_HOUR_LENGTH);
+            const timeoutIds = this.state.timers[id] || [];
+            timeoutIds.push(timeoutId);
+            this.setState({
+              timers: Object.assign({}, this.state.timers, {[id]: timeoutIds})
+            });
           });
-        }, spawn.age * GAME_HOUR_LENGTH);
-        timeoutIds.push(timeoutId);
       });
-      if (timeoutIds.length) {
-        this.setState({
-          timers: Object.assign({}, this.state.timers, {[id]: timeoutIds})
-        });
-      }
     }
     return Object.assign({}, item, { isDone: false, id, fadeIn })
   }
@@ -106,11 +108,15 @@ class Main extends React.Component {
               .concat(this.state.list.slice(index + 1));
     // items to spawn on done
     if (item.spawnsOnDone) {
-      item.spawnsOnDone.forEach(taskToSpawn => {
+      item.spawnsOnDone.forEach(async taskToSpawn => {
         // these timeout ids should be stored for possible cancellation
+        const spawnedItem = await this.props.db.collection(FIRESTORE_COLLECTION.TASKS)
+          .doc(taskToSpawn.taskId)
+          .get()
+          .then(doc => {
+            return doc.data();
+          });
         setTimeout(() => {
-          const spawnedItem = TASKS
-            .find(i => i.taskId === taskToSpawn.taskId);
           this.setState({
             list: this.state.list
                     .concat(this.prepareListItem(spawnedItem, true))
