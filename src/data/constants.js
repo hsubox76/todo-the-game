@@ -9,5 +9,6 @@ export const SPAWN_TYPE = {
 };
 
 export const FIRESTORE_COLLECTION = {
-    TASKS: 'tasks'
+    TASKS: 'tasks',
+    TASKS_BACKUP: 'tasks_backup'
 };

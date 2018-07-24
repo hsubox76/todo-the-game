@@ -51,6 +51,13 @@ class Admin extends React.Component {
             }
         });
     }
+    onCopyToBackup = () => {
+        this.props.db.collection(FIRESTORE_COLLECTION.TASKS).get().then(snapshot => {
+            snapshot.forEach(task => {
+               this.props.db.collection(FIRESTORE_COLLECTION.TASKS_BACKUP).doc(task.id).set(task.data()); 
+            });
+        });
+    }
     onUpdateTask = (id) => {
         const updates = this.state.updates || {};
         updates.isVisible = true;
@@ -82,6 +89,7 @@ class Admin extends React.Component {
                     }
                 });
             }
+            updates.createdAt = Date.now();
             this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(updates.taskId).set(updates).then(() => {
                this.setState({ updates: null, taskIdBeingEdited: null });
             });
@@ -231,6 +239,7 @@ class Admin extends React.Component {
         const idMap = {};
         TASKS.forEach(task => {
             idMap[task.taskId] = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
+            task.createdAt = Date.now();
         });
         TASKS.forEach(task => {
             if (INITIAL_TASK_IDS.includes(task.taskId)) {
@@ -420,72 +429,73 @@ class Admin extends React.Component {
         return spawnBoxes;
     }
     renderTaskList = () => {
-        return this.state.tasks.map(task => {
-            if (!task.isVisible) {
-                return null;
-            }
-            const classes = ['task-edit-box'];
-            const isEditable = task.taskId === this.state.taskIdBeingEdited;
-            let descriptionEl = <div className="description-text">{task.description}</div>;
-            if (isEditable) {
-                descriptionEl = (<textarea
-                            name="description"
-                            rows="3"
-                            defaultValue={task.description}
-                            onChange={this.onDescriptionChange}
-                        />);
-                if (this.state.updates || this.state.spawnToAdd) {
-                    classes.push('dirty');
+        return this.state.tasks
+            .map(task => {
+                if (!task.isVisible) {
+                    return null;
                 }
-            }
-            let parentLink = null;
-            if (task.parentId) {
-                const parentDesc = this.state.tasks.find(t => t.taskId === task.parentId).description;
-                parentLink = (
-                    <div className="parent-link" onClick={() => this.onClickSpawn(task.taskId, task.parentId, false)}>back to "{parentDesc}"</div>
-                );
-            }
-            const disableButtons = !!this.state.spawnToAdd;
-            const disableUpdate = isEditable && !this.state.updates;
-            return (
-                <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
-                    {parentLink}
-                    <div>{task.taskId === 'new' ? 'Create New Task' : ('ID: ' + task.taskId)}</div>
-                    <div className="form-row">
-                        <input name="taskId" type="hidden" value={task.taskId}/>
-                    </div>
-                    <div className="form-row">
-                        <label htmlFor="description">Description:</label>
-                        {descriptionEl}
-                    </div>
-                    <div className="form-row stack">
-                        <label>Spawns On Done:</label>
-                        {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_DONE)}
-                    </div>
-                    <div className="form-row stack">
-                        <label>Spawns On Age:</label>
-                        {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_AGE)}
-                    </div>
-                    <div className="form-row">
-                        <button
-                            className={disableButtons || disableUpdate ? 'disabled' : ''}
-                            disabled={disableButtons || disableUpdate}
-                        >
-                            {isEditable ? 'update' : 'edit'}
-                        </button>
-                        {isEditable &&
+                const classes = ['task-edit-box'];
+                const isEditable = task.taskId === this.state.taskIdBeingEdited;
+                let descriptionEl = <div className="description-text">{task.description}</div>;
+                if (isEditable) {
+                    descriptionEl = (<textarea
+                                name="description"
+                                rows="3"
+                                defaultValue={task.description}
+                                onChange={this.onDescriptionChange}
+                            />);
+                    if (this.state.updates || this.state.spawnToAdd) {
+                        classes.push('dirty');
+                    }
+                }
+                let parentLink = null;
+                if (task.parentId) {
+                    const parentDesc = this.state.tasks.find(t => t.taskId === task.parentId).description;
+                    parentLink = (
+                        <div className="parent-link" onClick={() => this.onClickSpawn(task.taskId, task.parentId, false)}>back to "{parentDesc}"</div>
+                    );
+                }
+                const disableButtons = !!this.state.spawnToAdd;
+                const disableUpdate = isEditable && !this.state.updates;
+                return (
+                    <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => this.onEditTask(e, task.taskId)}>
+                        {parentLink}
+                        <div>{task.taskId === 'new' ? 'Create New Task' : ('ID: ' + task.taskId)}</div>
+                        <div className="form-row">
+                            <input name="taskId" type="hidden" value={task.taskId}/>
+                        </div>
+                        <div className="form-row">
+                            <label htmlFor="description">Description:</label>
+                            {descriptionEl}
+                        </div>
+                        <div className="form-row stack">
+                            <label>Spawns On Done:</label>
+                            {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_DONE)}
+                        </div>
+                        <div className="form-row stack">
+                            <label>Spawns On Age:</label>
+                            {this.renderSpawns(task, isEditable, SPAWN_TYPE.ON_AGE)}
+                        </div>
+                        <div className="form-row">
                             <button
-                                type="nosubmit"
-                                className={"cancel-button" + (disableButtons ? ' disabled' : '')}
-                                disabled={disableButtons}
-                                onClick={() => this.setState({ updates: null, spawnToAdd: null, taskIdBeingEdited: null })}
+                                className={disableButtons || disableUpdate ? 'disabled' : ''}
+                                disabled={disableButtons || disableUpdate}
                             >
-                                cancel
-                            </button>}
-                    </div>
-                </form>
-              );
-        });
+                                {isEditable ? 'update' : 'edit'}
+                            </button>
+                            {isEditable &&
+                                <button
+                                    type="nosubmit"
+                                    className={"cancel-button" + (disableButtons ? ' disabled' : '')}
+                                    disabled={disableButtons}
+                                    onClick={() => this.setState({ updates: null, spawnToAdd: null, taskIdBeingEdited: null })}
+                                >
+                                    cancel
+                                </button>}
+                        </div>
+                    </form>
+                  );
+            });
     }
     render() {
         if (this.state.loading) {
@@ -506,6 +516,7 @@ class Admin extends React.Component {
         return (
           <div className="admin-container">
               <button onClick={this.populateFirebaseFromLocal}>init firebase from local defaults</button>
+              <button onClick={this.onCopyToBackup}>copy current to backup</button>
               <button onClick={this.onCreateClick}>create new task</button>
               {this.state.tasks && this.renderTaskList()}
           </div>
