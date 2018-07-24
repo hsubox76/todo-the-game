@@ -7,3 +7,7 @@ export const SPAWN_TYPE = {
     'ON_AGE': { name: 'spawnsOnAge', timeField: 'age', class: 'age' },
     'ON_DONE': { name: 'spawnsOnDone', timeField: 'delay', class: 'done' }
 };
+
+export const FIRESTORE_COLLECTION = {
+    TASKS: 'tasks'
+};

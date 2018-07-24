@@ -1,6 +1,6 @@
 import React from 'react';
 import firebase from 'firebase/app';
-import { SPAWN_TYPE } from '../data/constants';
+import { SPAWN_TYPE, FIRESTORE_COLLECTION } from '../data/constants';
 import { DAY, TASKS, INITIAL_TASK_IDS } from '../data/tasks';
 import '../styles/admin.css';
 
@@ -38,7 +38,7 @@ class Admin extends React.Component {
             this.setState({ loading: false });
             if (user) {
                 this.setState({ user });
-                this.props.db.collection('tasks').onSnapshot(snapshot => {
+                this.props.db.collection(FIRESTORE_COLLECTION.TASKS).onSnapshot(snapshot => {
                     const tasks = [];
                     snapshot.forEach(task => {
                         tasks.push(Object.assign({taskId: task.id, isVisible: task.data().isInitial}, task.data()))
@@ -67,7 +67,7 @@ class Admin extends React.Component {
             updates[spawn.type.name].push(newSpawnItem);
         }
         if (id === 'new') {
-            updates.taskId = this.props.db.collection('tasks').doc().id;
+            updates.taskId = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
             if (updates.spawnsOnDone) {
                 updates.spawnsOnDone.forEach(spawnedTask => {
                     if (spawnedTask.taskId === 'new') {
@@ -82,11 +82,11 @@ class Admin extends React.Component {
                     }
                 });
             }
-            this.props.db.collection('tasks').doc(updates.taskId).set(updates).then(() => {
+            this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(updates.taskId).set(updates).then(() => {
                this.setState({ updates: null, taskIdBeingEdited: null });
             });
         } else {
-            this.props.db.collection('tasks').doc(id).update(updates).then(() => {
+            this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(id).update(updates).then(() => {
                this.setState({ updates: null, taskIdBeingEdited: null });
             });
         }
@@ -230,7 +230,7 @@ class Admin extends React.Component {
     populateFirebaseFromLocal = () => {
         const idMap = {};
         TASKS.forEach(task => {
-            idMap[task.taskId] = this.props.db.collection('tasks').doc().id;
+            idMap[task.taskId] = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
         });
         TASKS.forEach(task => {
             if (INITIAL_TASK_IDS.includes(task.taskId)) {
@@ -247,7 +247,7 @@ class Admin extends React.Component {
                 });
             }
             task.taskId = idMap[task.taskId];
-            this.props.db.collection('tasks').doc(task.taskId).set(task);
+            this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(task.taskId).set(task);
         });
     }
     renderSpawns = (task, isEditable, type = SPAWN_TYPE.ON_DONE) => {
@@ -347,6 +347,7 @@ class Admin extends React.Component {
                             />
                             spawn copy
                         </div>
+                        {/* this is going to be a pain
                         <div className="check-row">
                             <input
                                 type="radio"
@@ -357,6 +358,7 @@ class Admin extends React.Component {
                             />
                             create new
                         </div>
+                        */}
                         <div className="check-row">
                             <input
                                 type="radio"
