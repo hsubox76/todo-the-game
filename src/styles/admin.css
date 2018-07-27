@@ -43,14 +43,22 @@
   background-color: #fff;
   border: 1px solid #9cf;
   margin: 10px 5px;
+  max-width: 1000px;
+}
+
+.task-edit-box.empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 300px;
 }
 
 .task-edit-box.editing {
-  box-shadow: 0 0 5px 5px #ccc;
+  box-shadow: 0 0 0 10px #ccc;
 }
 
 .task-edit-box.editing.dirty {
-  box-shadow: 0 0 5px 5px #9cf;
+  box-shadow: 0 0 0 10px #9cf;
 }
 
 .task-header {

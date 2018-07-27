@@ -431,8 +431,9 @@ class Admin extends React.Component {
   renderTaskBeingEdited = () => {
     if (!this.state.taskIdBeingEdited) {
       return (
-        <div className="task-edit-box">
-          select a task to edit
+        <div className="task-edit-box empty">
+          <div>select a task to edit or</div>
+          <button onClick={this.onCreateClick}>create new task</button>
         </div>
       );
     }
@@ -478,7 +479,13 @@ class Admin extends React.Component {
             type="nosubmit"
             className={"cancel-button" + (disableButtons ? ' disabled' : '')}
             disabled={disableButtons}
-            onClick={() => this.setState({ updates: null, spawnToAdd: null, taskIdBeingEdited: null })}
+            onClick={() => this.setState({
+              updates: null,
+              spawnToAdd: null,
+              taskIdBeingEdited: null,
+              tasks: task.taskId === 'new' ? this.state.tasks.slice(1) : this.state.tasks
+              
+            })}
           >
             cancel
           </button>
@@ -557,7 +564,6 @@ class Admin extends React.Component {
         <div className="global-buttons">
           <button onClick={this.populateFirebaseFromLocal}>init firebase from local defaults</button>
           <button onClick={this.onCopyToBackup}>copy current to backup</button>
-          <button onClick={this.onCreateClick}>create new task</button>
           <button onClick={this.onToggleShowAll}>show {this.state.showAll ? 'visible' : 'all'}</button>
         </div>
         {this.renderTaskBeingEdited()}
