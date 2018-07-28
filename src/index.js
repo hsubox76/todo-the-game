@@ -8,7 +8,7 @@ import 'firebaseui/dist/firebaseui.css';
 
 import Main from './components/Main';
 
-import Admin from './components/Admin';
+import Admin from './components/admin/Admin';
 
 // Initialize Cloud Firestore through Firebase
 
