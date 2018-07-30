@@ -12,6 +12,8 @@
 
 html {
   height: 100%;
+  --twhite-color: rgba(255, 255, 255, 0.05);
+  background-color: #efefef;
 }
 
 body {
@@ -32,6 +34,7 @@ body {
   --color-3: #00a896;
   --color-4: #02c39a;
   --color-5: #f0f3bd;
+  --text-color: #fff;
 }
 
 .palette-2 {
@@ -40,7 +43,7 @@ body {
   --color-2: #87CEC1;
   --color-3: #F9D777;
   --color-4: #FCB864;
-  --color-5: #fff;
+  --color-5: #333;
 }
 
 .palette-3 {
@@ -49,6 +52,7 @@ body {
   --color-3: #E9C46A;
   --color-4: #F4A261;
   --color-5: #E76F51;
+  --text-color: #fff;
 }
 
 .palette-4 {
@@ -57,6 +61,7 @@ body {
   --color-3: #9BC1BC;
   --color-4: #5CA4A9;
   --color-5: #E6EBE0;
+  --text-color: #333;
 }
 
 .palette-5 {
@@ -65,6 +70,7 @@ body {
   --color-3: #F77F00;
   --color-4: #FCBF49;
   --color-5: #EAE2B7;
+  --text-color: #fff;
 }
 
 .palette-6 {
@@ -73,10 +79,14 @@ body {
   --color-3: #708B75;
   --color-4: #9AB87A;
   --color-5: #F8F991;
+  --text-color: #fff;
+}
+
+button:hover {
+  box-shadow: inset 0 0 0 50px rgba(255, 255, 255, 0.2);
 }
 
 .main-container {
-  margin: auto;
   width: 380px;
   height: 100%;
   --container-color: var(--color-2);
@@ -88,8 +98,38 @@ body {
   background-color: var(--container-color);
 }
 
+.todo-header {
+  padding: 5px;
+  color: #fff;
+}
+
+.todo-header .toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.todo-header button {
+  color: #fff;
+  background-color: var(--button-color-hover);
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  display: flex;
+  cursor: pointer;
+}
+
+.todo-header button:hover {
+  background-color: var(--button-color);
+}
+
 .settings-container {
   display: flex;
+  justify-content: flex-end;
+  background-color: #efefef;
+  border: 2px solid white;
+  border-radius: 5px;
+  padding: 3px;
+  margin-top: 5px;
 }
 
 .settings-container .palette-description {
@@ -97,16 +137,18 @@ body {
   align-items: center;
   justify-content: center;
   padding: 5px;
-  color: #fff;
+  color: #555;
+  font-size: 1rem;
 }
 
 .settings-container .palette-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: #fff;
   width: 40px;
+  height: 35px;
   background-color: var(--preview-color);
   background: linear-gradient(to bottom right, var(--color-1), var(--color-1) 50%, var(--color-3) 51%, var(--color-3));
   cursor: pointer;
@@ -115,46 +157,60 @@ body {
 }
 
 .settings-container .palette-button.selected {
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.3);
+  font-size: 1.75rem;
 }
 
 .settings-container .palette-button:hover {
   box-shadow: inset 0 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
-.clock-container {
+.status-box {
   background-color: var(--clock-color);
+  background-image:
+  radial-gradient(var(--twhite-color) 9px, transparent 10px),        
+  repeating-radial-gradient(var(--twhite-color) 0, var(--twhite-color) 4px, transparent 5px, transparent 20px, var(--twhite-color) 21px, var(--twhite-color) 25px, transparent 26px, transparent 50px),
+  linear-gradient(rgba(255, 255, 255, 0.25) 0%, transparent 100%);
+  background-size: 30px 30px, 90px 90px, 200px 200px; 
+  background-position: 0 0;
   color: #fff;
   font-size: 2rem;
-  height: 200px;
   margin: 3px;
+  height: 200px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: space-between;
   flex-direction: column;
 }
 
+.clock-container {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 10px 0 10px;
+}
+
 .clock-container .time {
-  font-size: 3rem;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .clock-container .date {
   font-size: 1.5rem;
+  margin-right: 10px;
 }
 
 .title-container {
-  background-color: var(--title-color);
-  color: #fff;
-  font-size: 2rem;
-  padding: 10px;
-  margin: 3px;
+  color: var(--text-color);
+  font-size: 3rem;
+  margin: 0 10px;
 }
 
 .list-item {
-  margin: 3px;
+  margin: 1px;
   padding: 8px;
-  background-color: var(--item-color);
-  color: #fff;
+  background-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-color);
   display: flex;
   align-items: flex-start;
 }
@@ -189,6 +245,7 @@ body {
 }
 
 .regular-checkbox {
+  display: none;
 	-webkit-appearance: none;
 	background-color: #fafafa;
 	border: 2px solid #cacece;
@@ -203,7 +260,11 @@ body {
 }
 
 .regular-checkbox:checked {
-	background-color: #bbb;
+	background-color: var(--clock-color);
 	border: 2px solid #adb8c0;
 	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+}
+
+.regular-checkbox + label {
+  color: var(--clock-color);
 }

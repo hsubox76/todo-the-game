@@ -1,7 +1,9 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons';
 
 class ListItem extends React.Component {
-  handleCheckClick = () => {
+  handleCheckClick = (e) => {
     if (this.props.item.isDone) {
       return;
     }
@@ -20,11 +22,15 @@ class ListItem extends React.Component {
       <div className={classes.join(' ')}>
         <div className="checkbox-container">
           <input
+            id={'item-' + this.props.item.id}
             type="checkbox"
             className="regular-checkbox"
             checked={props.item.isDone}
             onChange={this.handleCheckClick}
           />
+          <label htmlFor={'item-' + this.props.item.id}>
+            <FontAwesomeIcon icon={props.item.isDone ? faCheckSquare : faSquare} size="lg" />
+          </label>
         </div>
         <div className="description">{props.item.description}</div>
       </div>

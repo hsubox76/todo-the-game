@@ -1,5 +1,7 @@
 import React from 'react';
 import { addHours } from 'date-fns';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
 import Clock from './Clock';
 import Title from './Title';
 import ListBox from './ListBox';
@@ -147,26 +149,44 @@ class Main extends React.Component {
     });
   }
   
+  handleSettingsClick = () => {
+    this.setState({ settingsVisible: !this.state.settingsVisible });
+  }
+  
   render() {
     const classes = ['main-container'];
     classes.push('palette-' + this.state.palette);
+    const settingsContainer = this.state.settingsVisible && (
+      <div className="settings-container">
+        <div className="palette-description">themes</div>
+        {PALETTES.map((paletteId) => (
+          <button
+            key={paletteId}
+            onClick={() => this.setState({ palette: paletteId })}
+            className={'palette-button palette-' + paletteId + (paletteId === this.state.palette ? ' selected' : '')}
+          >
+            {paletteId}
+          </button>
+        ))}
+      </div>
+    );
     return (
       <div className={classes.join(' ')}>
-          <div className="settings-container">
-            <div className="palette-description">themes</div>
-            {PALETTES.map((paletteId) => (
-              <button
-                key={paletteId}
-                onClick={() => this.setState({ palette: paletteId })}
-                className={'palette-button palette-' + paletteId + (paletteId === this.state.palette ? ' selected' : '')}
-              >
-                {paletteId}
+        <div className="status-box">
+          <div className="todo-header">
+            <div className="toolbar">
+              <button className="settings-button" onClick={this.handleSettingsClick}>
+                <FontAwesomeIcon icon={faCog} size="2x" />
               </button>
-            ))}
+            </div>
+            {settingsContainer}
           </div>
-          <Clock time={this.state.time} />
-          <Title />
-          <ListBox list={this.state.list} onDone={this.handleDone} />
+          <div>
+            <Title />
+            <Clock time={this.state.time} />
+          </div>
+        </div>
+        <ListBox list={this.state.list} onDone={this.handleDone} />
       </div>
     );
   }
