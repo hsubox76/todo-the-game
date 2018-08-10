@@ -112,6 +112,11 @@
   padding: 3px;
 }
 
+.form-row button:not(:first-child),
+.button-container button:not(:first-child) {
+  margin-left: 10px;
+}
+
 .description-text {
   padding: 3px;
   color: royalblue;
@@ -185,6 +190,14 @@ textarea[name="description"] {
   font-size: 14px;
 }
 
+.admin-container .delete-button {
+  background-color: #ab3c1a;
+}
+
+.button-container {
+  display: flex;
+}
+
 .spawn-timeunit {
   margin-left: 5px;
 }
@@ -225,6 +238,11 @@ textarea[name="description"] {
   background-color: #fff;
 }
 
-.disabled {
+.admin-container button.disabled {
   background-color: #ccc;
+  cursor: default;
+}
+
+.admin-container button.disabled:hover {
+  box-shadow: none;
 }
