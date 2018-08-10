@@ -15,7 +15,8 @@ const SpawnListEditable = ({
   onNewSpawnMethodChange,
   onClickSpawn,
   onCommitClick,
-  onAddClick
+  onAddClick,
+  onCreateClick,
 }) => {
   const spawnBoxes = task[type.name] ? task[type.name].map((spawn, index) => {
     const spawnTask = tasks.find(task => task.taskId === spawn.taskId);
@@ -92,18 +93,23 @@ const SpawnListEditable = ({
         />
         spawn copy
       </div>
-      {/* this is going to be a pain
       <div className="check-row">
         <input
         type="radio"
         name="new-spawn-type"
         value="new"
-        onChange={this.onNewSpawnMethodChange}
+        onChange={onNewSpawnMethodChange}
         checked={currentMethod === 'new'}
         />
         create new
+        <input
+          type="text"
+          placeholder="description"
+          className="new-spawn-input input-spawn-description"
+          value={spawnToAdd.description || ''}
+          onChange={(e) => onNewSpawnInputChange(e, type, {description: e.target.value})}
+        />
       </div>
-      */}
       <div className="check-row">
         <input
         type="radio"
@@ -114,7 +120,7 @@ const SpawnListEditable = ({
         />
         select existing (enter id)
         <input
-        className="input-id"
+        className="new-spawn-input input-id"
         value={spawnToAdd.id === task.taskId ? '' : spawnToAdd.id}
         placeholder="(self)"
         onFocus={() => onNewSpawnMethodChange('id')}

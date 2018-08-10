@@ -168,7 +168,7 @@ textarea[name="description"] {
   margin-right: 5px;
 }
 
-.cancel-button {
+.admin-container .cancel-button {
   background-color: #666;
   color: #fff;
   width: 60px;
@@ -223,6 +223,19 @@ textarea[name="description"] {
 
 .new-spawn-button-row {
   display: flex;
+}
+
+.new-spawn-input {
+  margin-left: 10px;
+  font-size: 1rem;
+}
+
+.input-id {
+  width: 150px;
+}
+
+.input-spawn-description {
+  width: 250px;
 }
 
 .parent-link {
