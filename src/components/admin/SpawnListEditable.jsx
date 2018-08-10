@@ -22,7 +22,9 @@ const SpawnListEditable = ({
     const spawnTask = tasks.find(task => task.taskId === spawn.taskId);
     let displayText = spawnTask ? spawnTask.description.substring(0, 30) : spawn.taskId;
     if (spawn.taskId === task.taskId) {
-    displayText = '(self)';
+      displayText = '(self)';
+    } else if (spawn.taskId === 'new') {
+      displayText = spawn.description;
     }
     const timeElement = (
       <div>
@@ -107,6 +109,7 @@ const SpawnListEditable = ({
           placeholder="description"
           className="new-spawn-input input-spawn-description"
           value={spawnToAdd.description || ''}
+          onFocus={() => onNewSpawnMethodChange('new')}
           onChange={(e) => onNewSpawnInputChange(e, type, {description: e.target.value})}
         />
       </div>

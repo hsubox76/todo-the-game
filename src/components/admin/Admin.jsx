@@ -34,7 +34,7 @@ const UI_CONFIG = {
 class Admin extends React.Component {
   constructor() {
     super();
-    this.state = { user: null, loading: true, updates: null, spawnsToCreate: [] };
+    this.state = { user: null, loading: true, updates: null };
   }
   componentDidMount() {
     firebase.auth().onAuthStateChanged((user) => {
@@ -64,18 +64,23 @@ class Admin extends React.Component {
   }
   onUpdateTask = (id) => {
     const updates = this.state.updates || {};
-    if (this.state.spawnToAdd) {
-      const spawn = this.state.spawnToAdd;
-      const taskIndex = spawn.taskIndex;
-      updates[spawn.type.name] = this.state.tasks[taskIndex][spawn.type.name] || [];
-      const newSpawnItem = {[spawn.type.timeField]: spawn.days * DAY};
-      newSpawnItem.taskId = spawn.id;
-      if (spawn.type.name === SPAWN_TYPE.ON_AGE.name) {
-        newSpawnItem.killParent = spawn.killParent
-      }
-      //TODO: handle create
-      updates[spawn.type.name].push(newSpawnItem);
+    let spawnsToCreate = [];
+    if (updates[SPAWN_TYPE.ON_AGE.name]) {
+      spawnsToCreate = spawnsToCreate.concat(updates[SPAWN_TYPE.ON_AGE.name]);
     }
+    if (updates[SPAWN_TYPE.ON_DONE.name]) {
+      spawnsToCreate = spawnsToCreate.concat(updates[SPAWN_TYPE.ON_DONE.name]);
+    }
+    spawnsToCreate = spawnsToCreate
+      .filter(spawn => spawn.taskId === 'new')
+      .map(spawn => {
+        spawn.taskId = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
+        return {
+          taskId: spawn.taskId,
+          description: spawn.description,
+          createdAt: Date.now()
+        };
+      });
     if (id === 'new') {
       updates.taskId = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
       if (updates.spawnsOnDone) {
@@ -101,16 +106,30 @@ class Admin extends React.Component {
          this.setState({ updates: null, taskIdBeingEdited: null });
       });
     }
-    this.state.spawnsToCreate.forEach(spawnToCreate => {
+    spawnsToCreate.forEach(spawnToCreate => {
       this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(spawnToCreate.taskId).set(spawnToCreate);
     });
-    this.setState({spawnsToCreate: []});
   }
   onDeleteTask = (e, id) => {
     e.preventDefault();
     this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(id).delete();
     this.setState({
-      tasks: this.state.tasks.filter(task => task.taskId !== id)
+      tasks: this.state.tasks
+        .filter(task => task.taskId !== id)
+        .map(task => {
+          const onAgeList = task[SPAWN_TYPE.ON_AGE.name] || [];
+          const onDoneList = task[SPAWN_TYPE.ON_DONE.name] || [];
+          const updates = {};
+          updates[SPAWN_TYPE.ON_AGE.name] = onAgeList.filter(spawn => spawn.taskId !== id);
+          updates[SPAWN_TYPE.ON_DONE.name] = onDoneList.filter(spawn => spawn.taskId !== id);
+          if (onAgeList.length === updates[SPAWN_TYPE.ON_AGE.name].length
+              && onDoneList.length === updates[SPAWN_TYPE.ON_DONE.name].length) {
+              return task;
+          }
+          this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(task.taskId).update(updates);
+          return Object.assign({}, task, updates);
+          
+        })
     });
   }
   onEditTask = (e, id) => {
@@ -210,18 +229,12 @@ class Admin extends React.Component {
     updates[spawn.type.name] = this.state.tasks[taskIndex][spawn.type.name] || [];
     const newSpawnItem = {[spawn.type.timeField]: spawn.days * DAY};
     newSpawnItem.taskId = spawn.id;
+    if (spawn.method === 'new') {
+      newSpawnItem.taskId = 'new';
+      newSpawnItem.description = spawn.description;
+    }
     if (spawn.type.name === SPAWN_TYPE.ON_AGE.name) {
       newSpawnItem.killParent = spawn.killParent
-    }
-    let newSpawnDoc = null;
-    if (spawn.method === 'new') {
-      newSpawnItem.taskId = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
-      newSpawnDoc = {
-        taskId: newSpawnItem.taskId,
-        description: spawn.description,
-        createdAt: Date.now()
-      };
-      // this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(newSpawnItem.taskId).set(newSpawnDoc);
     }
     updates[spawn.type.name].push(newSpawnItem);
     const newTasks = this.state.tasks.slice(0, taskIndex)
@@ -230,15 +243,25 @@ class Admin extends React.Component {
     this.setState({
       tasks: newTasks,
       updates,
-      spawnToAdd: null,
-      spawnsToCreate: newSpawnDoc ? this.state.spawnsToCreate.concat(newSpawnDoc) : this.state.spawnsToCreate
+      spawnToAdd: null
     });
   }
   onNewSpawnMethodChange = (e) => {
     const method = e.target ? e.target.value : e;
-    this.setState({
-      spawnToAdd: Object.assign({}, this.state.spawnToAdd, { method })
-    });
+    if (method === 'new') {
+      this.setState({
+        spawnToAdd: Object.assign({}, this.state.spawnToAdd, {
+          method,
+          description: ''
+        })
+      });
+    } else {
+      const noDescSpawn = Object.assign({}, this.state.spawnToAdd, { method });
+      noDescSpawn.description = undefined;
+      this.setState({
+        spawnToAdd: noDescSpawn
+      });
+    }
   }
   onRemoveSpawn = (e, type, task, index) => {
     let newList;

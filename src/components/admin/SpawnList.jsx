@@ -12,7 +12,9 @@ const SpawnList = ({
     const spawnTask = tasks.find(task => task.taskId === spawn.taskId);
     let displayText = spawnTask ? spawnTask.description.substring(0, 30) : spawn.taskId;
     if (spawn.taskId === task.taskId) {
-    displayText = '(self)';
+      displayText = '(self)';
+    } else if (spawn.taskId === 'new') {
+      displayText = spawn.description;
     }
     const timeElement = (
       <div>
