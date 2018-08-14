@@ -18,6 +18,9 @@ class ListItem extends React.Component {
     if (props.item.fadeIn) {
       classes.push('fade-in');
     }
+    if (props.item.isInitial) {
+      classes.push('initial-item');
+    }
     return (
       <div className={classes.join(' ')}>
         <div className="checkbox-container">

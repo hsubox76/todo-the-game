@@ -20,12 +20,12 @@ class Main extends React.Component {
       list: [],
       time: new Date(2018, 0, 1, 8),
       timers: {},
-      palette: 1
+      palette: 1,
+      firstLoad: true
     };
   }
   
   componentDidMount() {
-    this.incrementClock();
     this.props.db.collection('tasks').get().then(snapshot => {
       const list = [];
       snapshot.forEach(taskDoc => {
@@ -35,7 +35,9 @@ class Main extends React.Component {
         }
       });
       this.setState({ list });
+      this.incrementClock();
     });
+    setTimeout(() => this.setState({ firstLoad: false }), 5000);
   }
   
   componentWillUnmount() {
@@ -116,7 +118,7 @@ class Main extends React.Component {
           .doc(taskToSpawn.taskId)
           .get()
           .then(doc => {
-            return doc.data();
+            return Object.assign({}, doc.data(), {isInitial: false});
           });
         setTimeout(() => {
           this.setState({
@@ -186,7 +188,8 @@ class Main extends React.Component {
             <Clock time={this.state.time} />
           </div>
         </div>
-        <ListBox list={this.state.list} onDone={this.handleDone} />
+        <ListBox list={this.state.list} onDone={this.handleDone} firstLoad={this.state.firstLoad} />
+        {this.state.list.length === 0 && <div className="loading-container"><span className="loading-text">loading</span></div>}
       </div>
     );
   }

@@ -18,7 +18,7 @@
  * }
  */
 
-export const INITIAL_TASK_IDS = [1, 2, 3];
+export const INITIAL_TASK_IDS = [1, 2, 3, 14];
 
 export const DAY = 24;
 
@@ -33,7 +33,7 @@ export const TASKS = [
       { age: 3 * DAY, taskId: 4, killParent: true }
     ]
   },
-  { taskId: 2, description: 'Call mom' },
+  { taskId: 2, description: 'Fill out job application for Google' },
   {
     taskId: 3,
     description: 'Text K about how job interview went',
@@ -105,4 +105,5 @@ export const TASKS = [
     taskId: 13,
     description: 'Ask L how to set up Gmail filter to block angry messages from K'
   },
+  { taskId: 14, description: 'Fill out job application for Wal-Mart' },
 ];
