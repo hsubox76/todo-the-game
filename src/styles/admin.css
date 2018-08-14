@@ -8,7 +8,7 @@
 }
 
 .admin-container {
-  background-color: #246;
+  background-color: #fff;
   padding: 15px;
 }
 
@@ -45,12 +45,13 @@
 }
  
 .task-box {
-  border: 1px solid grey;
-  padding: 10px;
+  border: 1px solid #999;
   margin: 5px;
   animation: fadeIn 3s;
-  background-color: #ddd;
-  width: 40%;
+  background-color: #fff;
+  width: 45%;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px #999;
 }
 
 .task-box.selected {
@@ -58,11 +59,12 @@
 }
 
 .task-edit-box {
-  padding: 15px;
   background-color: #fff;
-  border: 1px solid #9cf;
+  border: 1px solid #999;
   margin: 10px 5px;
-  max-width: 1000px;
+  max-width: 1200px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px #999;
 }
 
 .task-edit-box.empty {
@@ -70,14 +72,14 @@
   align-items: center;
   justify-content: space-between;
   width: 300px;
+  padding: 15px;
 }
 
-.task-edit-box.editing {
-  box-shadow: 0 0 0 10px #ccc;
-}
-
-.task-edit-box.editing.dirty {
-  box-shadow: 0 0 0 10px #9cf;
+.task-edit-box-header {
+  background-color: #37a;
+  color: #fff;
+  padding: 10px;
+  font-weight: bold;
 }
 
 .task-header {
@@ -86,6 +88,9 @@
   justify-content: space-between;
   border-bottom: 1px solid grey;
   padding-bottom: 4px;
+  background-color: #666;
+  color: #fff;
+  padding: 7px;
 }
 
 .task-header button {
@@ -95,7 +100,7 @@
 }
 
 .form-row {
-  padding: 5px 0;
+  padding: 5px 7px;
   display: flex;
   align-items: flex-start;
   border-bottom: 1px solid #ccc;
@@ -107,8 +112,7 @@
 
 .form-row label {
   margin-right: 5px;
-  background-color: #666;
-  color: #fff;
+  color: #333;
   padding: 3px;
 }
 
@@ -127,6 +131,7 @@
   padding: 5px;
   margin: 5px 0;
   display: flex;
+  border-radius: 5px;
 }
 
 .spawn-box-age {
@@ -138,12 +143,13 @@
 }
 
 .spawn-box > div {
-  padding: 2px 5px;
+  padding: 3px 5px;
   margin: 0 5px;
-  background-color: #efefef;
+  background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
 }
 
 .task-link:hover {
@@ -209,6 +215,7 @@ textarea[name="description"] {
 
 .new-spawn-form {
   border: 1px solid grey;
+  border-radius: 5px;
   padding: 5px;
   background-color: #efefef;
 }
@@ -228,6 +235,7 @@ textarea[name="description"] {
 .new-spawn-input {
   margin-left: 10px;
   font-size: 1rem;
+  padding: 2px 5px;
 }
 
 .input-id {
@@ -235,7 +243,7 @@ textarea[name="description"] {
 }
 
 .input-spawn-description {
-  width: 250px;
+  width: 450px;
 }
 
 .parent-link {
@@ -252,7 +260,8 @@ textarea[name="description"] {
 }
 
 .admin-container button.disabled {
-  background-color: #ccc;
+  background-color: #666;
+  box-shadow: inset 0 0 0 2px #999;
   cursor: default;
 }
 

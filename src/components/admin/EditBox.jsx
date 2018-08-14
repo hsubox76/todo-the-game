@@ -31,8 +31,8 @@ const EditBox = ({
   }
   return (
     <form className={classes.join(' ')} key={task.taskId} onSubmit={(e) => onEditTask(e, task.taskId)}>
-      <div>{task.taskId === 'new' ? 'Create New Task' : ('ID: ' + task.taskId)}</div>
-      <div className="form-row">
+      <div className="task-edit-box-header">{task.taskId === 'new' ? 'Create New Task' : ('ID: ' + task.taskId)}</div>
+      <div>
         <input name="taskId" type="hidden" value={task.taskId}/>
       </div>
       <div className="form-row">
