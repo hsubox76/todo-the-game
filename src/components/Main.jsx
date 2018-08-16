@@ -16,6 +16,7 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
     this.lastId = 0;
+    this.gameHourLength = GAME_HOUR_LENGTH;
     this.state = {
       list: [],
       time: new Date(2018, 0, 1, 8),
@@ -26,6 +27,18 @@ class Main extends React.Component {
   }
   
   componentDidMount() {
+    const params = window.location.search
+      .substring(1)
+      .split('&')
+      .reduce((pairs, pairString) => {
+        const [key, val] = pairString.split('=');
+        pairs[key] = val;
+        return pairs;
+      }, {});
+    this.setState({ params });
+    if (params.hourlength) {
+      this.gameHourLength = parseInt(params.hourlength, 10);
+    }
     this.props.db.collection('tasks').get().then(snapshot => {
       const list = [];
       snapshot.forEach(taskDoc => {
@@ -54,7 +67,7 @@ class Main extends React.Component {
         time: addHours(this.state.time, CLOCK_INCREMENT_INTERVAL_HOURS)
       });
       this.incrementClock();
-    }, GAME_HOUR_LENGTH * CLOCK_INCREMENT_INTERVAL_HOURS);
+    }, this.gameHourLength * CLOCK_INCREMENT_INTERVAL_HOURS);
     this.setState({
       timers: Object.assign({}, this.state.timers, { clock: [timeoutId] })
     });
@@ -84,7 +97,7 @@ class Main extends React.Component {
               this.setState({
                 list: newList.concat(this.prepareListItem(doc.data(), true))
               });
-            }, spawn.age * GAME_HOUR_LENGTH);
+            }, spawn.age * this.gameHourLength);
             const timeoutIds = this.state.timers[id] || [];
             timeoutIds.push(timeoutId);
             this.setState({
@@ -125,7 +138,7 @@ class Main extends React.Component {
             list: this.state.list
                     .concat(this.prepareListItem(spawnedItem, true))
           });
-        }, taskToSpawn.delay * GAME_HOUR_LENGTH);
+        }, taskToSpawn.delay * this.gameHourLength);
       });
     }
     // disappear after a while

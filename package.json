@@ -9,6 +9,7 @@
     "date-fns": "^1.29.0",
     "firebase": "^5.2.0",
     "firebaseui": "^3.1.1",
+    "micro": "latest",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-scripts": "1.1.4",
