@@ -34,7 +34,7 @@ const UI_CONFIG = {
 class Admin extends React.Component {
   constructor() {
     super();
-    this.state = { user: null, loading: true, updates: null };
+    this.state = { user: null, loading: true, updates: null, pathMode: false };
   }
   componentDidMount() {
     firebase.auth().onAuthStateChanged((user) => {
@@ -281,24 +281,33 @@ class Admin extends React.Component {
       tasks: newTasks
     });
   }
-  onClickSpawn = (oldId, spawnId, toSpawn = true) => {
+  onClickSpawn = (oldId, spawnId, type, toSpawn = true) => {
     if (oldId === spawnId) {
       return;
     }
-    this.setState({
-      tasks: this.state.tasks.map(task => {
-         if (task.taskId === oldId) {
-           return Object.assign({}, task, {isVisible: false});
-         } else if (task.taskId === spawnId) {
-           const propsToAdd = {isVisible: true};
-           if (toSpawn) {
-             propsToAdd.parentId = oldId;
+    if (this.state.pathChain) {
+      const lastId = this.state.pathChain[this.state.pathChain.length - 1].task.taskId;
+      if (lastId !== oldId) {
+        return;
+      }
+      const task = this.state.tasks.find(task => task.taskId === spawnId);
+      this.setState({ pathChain: this.state.pathChain.concat({ task, type }) });
+    } else {
+      this.setState({
+        tasks: this.state.tasks.map(task => {
+           if (task.taskId === oldId) {
+             return Object.assign({}, task, {isVisible: false});
+           } else if (task.taskId === spawnId) {
+             const propsToAdd = {isVisible: true};
+             if (toSpawn) {
+               propsToAdd.parentId = oldId;
+             }
+             return Object.assign({}, task, propsToAdd);
            }
-           return Object.assign({}, task, propsToAdd);
-         }
-         return task;
-      })
-    });
+           return task;
+        })
+      });
+    }
   }
   populateFirebaseFromLocal = () => {
     const idMap = {};
@@ -336,6 +345,10 @@ class Admin extends React.Component {
         });
       });
   }
+  onSetPath = (e, id) => {
+    e.preventDefault();
+    this.setState({ pathChain: [{task: this.state.tasks.find(task => task.taskId === id)}] });
+  }
   onToggleShowAll = () => {
     this.setState({ showAll: !this.state.showAll });
   }
@@ -356,12 +369,59 @@ class Admin extends React.Component {
       );
     }
     const taskBeingEdited = this.state.tasks && this.state.tasks.find(task => task.taskId === this.state.taskIdBeingEdited);
+    
+    let taskList;
+    if (this.state.pathChain) {
+      taskList = (
+        <div className="tasks-container single-column">
+          {this.state.pathChain.map(({task, type}) => {
+            return (
+                <TaskBox
+                  key={task.taskId}
+                  task={task}
+                  classList={[type || 'path-chain-top']}
+                  selected={task.taskId === this.state.taskIdBeingEdited}
+                  tasks={this.state.tasks}
+                  disableButtons={!!this.state.spawnToAdd}
+                  onClickSpawn={this.onClickSpawn}
+                  onEditTask={this.onEditTask}
+                  onDeleteTask={this.onDeleteTask}
+                  onSetPath={this.onSetPath}
+                />
+              );
+            }
+          )}
+        </div>
+      );
+    } else if (this.state.tasks) {
+      taskList = (
+        <div className="tasks-container">
+          {this.state.tasks
+            .filter(task => this.state.showAll || task.isVisible)
+            .map(task => (
+              <TaskBox
+                key={task.taskId}
+                task={task}
+                selected={task.taskId === this.state.taskIdBeingEdited}
+                tasks={this.state.tasks}
+                disableButtons={!!this.state.spawnToAdd}
+                onClickSpawn={this.onClickSpawn}
+                onEditTask={this.onEditTask}
+                onDeleteTask={this.onDeleteTask}
+                onSetPath={this.onSetPath}
+              />
+            )
+          )}
+        </div>
+      );
+    }
     return (
       <div className="admin-container">
         <div className="global-buttons">
           <button onClick={this.populateFirebaseFromLocal}>init firebase from local defaults</button>
           <button onClick={this.onCopyToBackup}>copy current to backup</button>
           <button onClick={this.onToggleShowAll}>show {this.state.showAll ? 'visible' : 'all'}</button>
+          {this.state.pathChain && <button onClick={() => this.setState({ pathChain: null })}>reset view</button>}
         </div>
         <EditBox
           task={taskBeingEdited}
@@ -404,23 +464,7 @@ class Admin extends React.Component {
             onAddClick={this.onAddClick}
           />
         </EditBox>
-        <div className="tasks-container">
-          {this.state.tasks && this.state.tasks
-            .filter(task => this.state.showAll || task.isVisible)
-            .map(task => (
-              <TaskBox
-                key={task.taskId}
-                task={task}
-                selected={task.taskId === this.state.taskIdBeingEdited}
-                tasks={this.state.tasks}
-                disableButtons={!!this.state.spawnToAdd}
-                onClickSpawn={this.onClickSpawn}
-                onEditTask={this.onEditTask}
-                onDeleteTask={this.onDeleteTask}
-              />
-            )
-          )}
-        </div>
+        {this.state.tasks && taskList}
       </div>
     );
     

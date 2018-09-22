@@ -36,6 +36,11 @@
   flex-wrap: wrap;
 }
 
+.tasks-container.single-column {
+  flex-direction: column;
+  flex-wrap: none;
+}
+
 .global-buttons {
   display: flex;
 }
@@ -52,6 +57,14 @@
   width: 45%;
   border-radius: 5px;
   box-shadow: 2px 2px 2px #999;
+}
+
+.task-box.path-chain-top {
+  margin-left: 150px;
+}
+
+.task-box.spawnsOnAge {
+  margin-left: 300px;
 }
 
 .task-box.selected {

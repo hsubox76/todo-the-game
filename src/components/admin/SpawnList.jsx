@@ -38,7 +38,7 @@ const SpawnList = ({
     >
       <div
         className="task-link"
-        onClick={() => onClickSpawn(task.taskId, spawn.taskId)}
+        onClick={() => onClickSpawn(task.taskId, spawn.taskId, type.name)}
       >
         {displayText}
       </div>

@@ -6,12 +6,14 @@ const TaskBox = ({
     task,
     selected,
     tasks,
+    classList = [],
     disableButtons,
     onClickSpawn,
     onEditTask,
-    onDeleteTask
+    onDeleteTask,
+    onSetPath
 }) => {
-    const classes = ['task-box'];
+    const classes = ['task-box'].concat(classList);
     if (selected) {
       classes.push('selected');
     }
@@ -37,6 +39,13 @@ const TaskBox = ({
               disabled={disableButtons}
             >
               edit
+            </button>
+            <button
+              onClick={(e) => onSetPath(e, task.taskId)}
+              className={disableButtons ? 'disabled' : ''}
+              disabled={disableButtons}
+            >
+              solo
             </button>
             <button
               onClick={(e) => onDeleteTask(e, task.taskId)}
