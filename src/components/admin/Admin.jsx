@@ -1,11 +1,12 @@
 import React from 'react';
 import firebase from 'firebase/app';
-import { SPAWN_TYPE, FIRESTORE_COLLECTION } from '../../data/constants';
+import { SPAWN_TYPE } from '../../data/constants';
 import { DAY, TASKS, INITIAL_TASK_IDS } from '../../data/tasks';
 import '../../styles/admin.css';
 import TaskBox from './TaskBox';
 import EditBox from './EditBox';
 import SpawnListEditable from './SpawnListEditable';
+import { getQueryParams } from '../../utils';
 
 const UI_CONFIG = {
   callbacks: {
@@ -33,14 +34,28 @@ const UI_CONFIG = {
 class Admin extends React.Component {
   constructor() {
     super();
-    this.state = { user: null, loading: true, updates: null, pathMode: false };
+    const params = getQueryParams();
+    this.state = {
+      gamesList: [],
+      user: null,
+      loading: true,
+      updates: null,
+      pathMode: false,
+      tasksCollection: 'tasks-' + (params.source || 'default')
+    };
   }
   componentDidMount() {
     firebase.auth().onAuthStateChanged((user) => {
       this.setState({ loading: false });
       if (user) {
         this.setState({ user });
-        this.props.db.collection(FIRESTORE_COLLECTION.TASKS).onSnapshot(snapshot => {
+        this.props.db.collection("gameslist").get().then(snapshot => {
+          this.setState({
+            gamesList: snapshot.docs.map(
+              doc => Object.assign(doc.data(), { id: doc.id }))
+          });
+        });
+        this.props.db.collection(this.state.tasksCollection).onSnapshot(snapshot => {
           const tasks = [];
           snapshot.forEach(task => {
             const isVisible = task.data().isInitial || (Date.now() - task.data().createdAt < 10000);
@@ -55,9 +70,9 @@ class Admin extends React.Component {
     });
   }
   onCopyToBackup = () => {
-    this.props.db.collection(FIRESTORE_COLLECTION.TASKS).get().then(snapshot => {
+    this.props.db.collection(this.state.tasksCollection).get().then(snapshot => {
       snapshot.forEach(task => {
-         this.props.db.collection(FIRESTORE_COLLECTION.TASKS_BACKUP).doc(task.id).set(task.data()); 
+         this.props.db.collection(this.state.tasksCollection + "_BACKUP").doc(task.id).set(task.data()); 
       });
     });
   }
@@ -73,7 +88,7 @@ class Admin extends React.Component {
     spawnsToCreate = spawnsToCreate
       .filter(spawn => spawn.taskId === 'new')
       .map(spawn => {
-        spawn.taskId = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
+        spawn.taskId = this.props.db.collection(this.state.tasksCollection).doc().id;
         return {
           taskId: spawn.taskId,
           description: spawn.description,
@@ -81,7 +96,7 @@ class Admin extends React.Component {
         };
       });
     if (id === 'new') {
-      updates.taskId = this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc().id;
+      updates.taskId = this.props.db.collection(this.state.tasksCollection).doc().id;
       if (updates.spawnsOnDone) {
         updates.spawnsOnDone.forEach(spawnedTask => {
           if (spawnedTask.taskId === 'new') {
@@ -97,21 +112,21 @@ class Admin extends React.Component {
         });
       }
       updates.createdAt = Date.now();
-      this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(updates.taskId).set(updates).then(() => {
+      this.props.db.collection(this.state.tasksCollection).doc(updates.taskId).set(updates).then(() => {
          this.setState({ updates: null, taskIdBeingEdited: null });
       });
     } else {
-      this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(id).update(updates).then(() => {
+      this.props.db.collection(this.state.tasksCollection).doc(id).update(updates).then(() => {
          this.setState({ updates: null, taskIdBeingEdited: null });
       });
     }
     spawnsToCreate.forEach(spawnToCreate => {
-      this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(spawnToCreate.taskId).set(spawnToCreate);
+      this.props.db.collection(this.state.tasksCollection).doc(spawnToCreate.taskId).set(spawnToCreate);
     });
   }
   onDeleteTask = (e, id) => {
     e.preventDefault();
-    this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(id).delete();
+    this.props.db.collection(this.state.tasksCollection).doc(id).delete();
     this.setState({
       tasks: this.state.tasks
         .filter(task => task.taskId !== id)
@@ -125,7 +140,7 @@ class Admin extends React.Component {
               && onDoneList.length === updates[SPAWN_TYPE.ON_DONE.name].length) {
               return task;
           }
-          this.props.db.collection(FIRESTORE_COLLECTION.TASKS).doc(task.taskId).update(updates);
+          this.props.db.collection(this.state.tasksCollection).doc(task.taskId).update(updates);
           return Object.assign({}, task, updates);
           
         })
@@ -310,7 +325,7 @@ class Admin extends React.Component {
   }
   populateFirebaseFromLocal = () => {
     const idMap = {};
-    const tasksCollection = this.props.db.collection(FIRESTORE_COLLECTION.TASKS);
+    const tasksCollection = this.props.db.collection(this.state.tasksCollection);
     tasksCollection
       .get()
       .then(snapshot => {
@@ -421,6 +436,17 @@ class Admin extends React.Component {
           <button onClick={this.onCopyToBackup}>copy current to backup</button>
           <button onClick={this.onToggleShowAll}>show {this.state.showAll ? 'visible' : 'all'}</button>
           {this.state.pathChain && <button onClick={() => this.setState({ pathChain: null })}>reset view</button>}
+          <div className="games-list">
+            <span>games:</span>
+            {this.state.gamesList.map((game) => (
+              <a
+                key={game.id}
+                href={"/?admin=true&source=" + game.name}
+                className={'game-name' + (this.state.tasksCollection === 'tasks-' + game.name ? ' selected' : '')}>
+                {game.name}
+              </a>
+            ))}
+          </div>
         </div>
         <EditBox
           task={taskBeingEdited}

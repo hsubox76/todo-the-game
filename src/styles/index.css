@@ -112,6 +112,7 @@ button:hover {
 .todo-header {
   padding: 5px;
   color: #fff;
+  position: relative;
 }
 
 .todo-header .toolbar {
@@ -134,13 +135,43 @@ button:hover {
 }
 
 .settings-container {
-  display: flex;
-  justify-content: flex-end;
   background-color: #efefef;
   border: 2px solid white;
   border-radius: 5px;
   padding: 3px;
   margin-top: 5px;
+  position: absolute;
+  right: 5px;
+}
+
+.settings-container .settings-palette-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.settings-container .settings-game-row {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.settings-container a.game-name {
+  font-size: 1rem;
+  padding: 7px 10px;
+  color: #fff;
+  text-decoration: none;
+  background-color: var(--button-color);
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+
+.settings-container a.game-name.selected {
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.settings-container a.game-name:hover {
+  box-shadow: inset 0 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .settings-container .palette-description {
@@ -165,6 +196,7 @@ button:hover {
   cursor: pointer;
   margin: 0 2px;
   border: none;
+  padding: 0;
 }
 
 .settings-container .palette-button.selected {

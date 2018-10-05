@@ -281,3 +281,24 @@ textarea[name="description"] {
 .admin-container button.disabled:hover {
   box-shadow: none;
 }
+
+.games-list {
+  padding: 5px;
+}
+
+.games-list > * {
+  margin: 0 5px;
+  padding: 5px;
+}
+
+.game-name {
+  color: white;
+  background-color: #999;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.game-name.selected {
+  background-color: royalblue;
+  font-weight: bold;
+}

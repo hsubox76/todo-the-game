@@ -8,38 +8,39 @@ import ListBox from './ListBox';
 import {
   PALETTES,
   GAME_HOUR_LENGTH,
-  CLOCK_INCREMENT_INTERVAL_HOURS,
-  FIRESTORE_COLLECTION
+  CLOCK_INCREMENT_INTERVAL_HOURS
 } from '../data/constants';
+import { getQueryParams } from '../utils';
 
 class Main extends React.Component {
   constructor(props) {
     super(props);
     this.lastId = 0;
     this.gameHourLength = GAME_HOUR_LENGTH;
+    const params = getQueryParams();
     this.state = {
+      gamesList: [],
       list: [],
       time: new Date(2018, 0, 1, 8),
       timers: {},
       palette: 1,
-      firstLoad: true
+      params,
+      firstLoad: true,
+      tasksCollection: 'tasks-' + (params.source || 'default')
     };
   }
   
   componentDidMount() {
-    const params = window.location.search
-      .substring(1)
-      .split('&')
-      .reduce((pairs, pairString) => {
-        const [key, val] = pairString.split('=');
-        pairs[key] = val;
-        return pairs;
-      }, {});
-    this.setState({ params });
-    if (params.hourlength) {
-      this.gameHourLength = parseInt(params.hourlength, 10);
+    if (this.state.params.hourlength) {
+      this.gameHourLength = parseInt(this.state.params.hourlength, 10);
     }
-    this.props.db.collection('tasks').get().then(snapshot => {
+    this.props.db.collection("gameslist").get().then(snapshot => {
+      this.setState({
+        gamesList: snapshot.docs.map(
+          doc => Object.assign(doc.data(), { id: doc.id }))
+      });
+    });
+    this.props.db.collection(this.state.tasksCollection).get().then(snapshot => {
       const list = [];
       snapshot.forEach(taskDoc => {
         const task = taskDoc.data();
@@ -84,7 +85,7 @@ class Main extends React.Component {
     const id = this.lastId++;
     if (item.spawnsOnAge) {
       item.spawnsOnAge.forEach(spawn => {
-        this.props.db.collection(FIRESTORE_COLLECTION.TASKS)
+        this.props.db.collection(this.state.tasksCollection)
           .doc(spawn.taskId)
           .get()
           .then(doc => {
@@ -127,7 +128,7 @@ class Main extends React.Component {
     if (item.spawnsOnDone) {
       item.spawnsOnDone.forEach(async taskToSpawn => {
         // these timeout ids should be stored for possible cancellation
-        const spawnedItem = await this.props.db.collection(FIRESTORE_COLLECTION.TASKS)
+        const spawnedItem = await this.props.db.collection(this.state.tasksCollection)
           .doc(taskToSpawn.taskId)
           .get()
           .then(doc => {
@@ -168,21 +169,38 @@ class Main extends React.Component {
     this.setState({ settingsVisible: !this.state.settingsVisible });
   }
   
+  handleGameSelect = (e, game) => {
+    this.setState({ tasksCollection: 'tasks-' + game.name });
+  }
+  
   render() {
     const classes = ['main-container'];
     classes.push('palette-' + this.state.palette);
     const settingsContainer = this.state.settingsVisible && (
       <div className="settings-container">
-        <div className="palette-description">themes</div>
-        {PALETTES.map((paletteId) => (
-          <button
-            key={paletteId}
-            onClick={() => this.setState({ palette: paletteId })}
-            className={'palette-button palette-' + paletteId + (paletteId === this.state.palette ? ' selected' : '')}
-          >
-            {paletteId}
-          </button>
-        ))}
+        <div className="settings-palette-row">
+          <div className="palette-description">themes</div>
+          {PALETTES.map((paletteId) => (
+            <button
+              key={paletteId}
+              onClick={() => this.setState({ palette: paletteId })}
+              className={'palette-button palette-' + paletteId + (paletteId === this.state.palette ? ' selected' : '')}
+            >
+              {paletteId}
+            </button>
+          ))}
+        </div>
+        <div className="settings-game-row">
+          <div className="palette-description">choose game</div>
+          {this.state.gamesList.map((game) => (
+            <a
+              key={game.id}
+              href={"/?source=" + game.name}
+              className={'game-name' + (this.state.tasksCollection === 'tasks-' + game.name ? ' selected' : '')}>
+              {game.name}
+            </a>
+          ))}
+        </div>
       </div>
     );
     return (

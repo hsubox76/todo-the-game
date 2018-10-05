@@ -5,6 +5,7 @@ import firebase from 'firebase/app';
 import * as firebaseui from 'firebaseui';
 import 'firebase/firestore';
 import 'firebaseui/dist/firebaseui.css';
+import { getQueryParams } from './utils';
 
 import Main from './components/Main';
 
@@ -26,9 +27,17 @@ firestore.settings(settings);
 // Initialize the FirebaseUI Widget using Firebase.
 const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
-if (window.location.search.includes('admin')) {
-    ReactDOM.render(<Admin db={firestore} ui={ui}/>, document.getElementById('root'));
+const params = getQueryParams();
+
+if (params.hasOwnProperty('admin')) {
+    ReactDOM.render(
+        <Admin db={firestore} ui={ui} />,
+        document.getElementById('root')
+    );
 } else {
-    ReactDOM.render(<Main db={firestore} ui={ui}/>, document.getElementById('root'));
+    ReactDOM.render(
+        <Main db={firestore} ui={ui} />,
+        document.getElementById('root')
+    );
 }
 
