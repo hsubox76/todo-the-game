@@ -11,11 +11,12 @@ import Main from './components/Main';
 import Admin from './components/admin/Admin';
 
 // Initialize Cloud Firestore through Firebase
+const projectId = process.env.REACT_APP_TDG_PROJECT_ID;
 
 firebase.initializeApp({
-    apiKey: "AIzaSyDtmd6-QAqHuh1ZGQrEQb8crE97o8igQgc",
-    authDomain: "todo-the-game.firebaseapp.com",
-    projectId: "todo-the-game",
+    apiKey: process.env.REACT_APP_TDG_API_KEY,
+    authDomain: projectId + ".firebaseapp.com",
+    projectId
 });
 
 const firestore = firebase.firestore();
