@@ -107,6 +107,14 @@ class Main extends React.Component {
           });
       });
     }
+    if (item.special === 'ending1') {
+      setTimeout(() => {
+        this.setState({
+          list: [],
+          endingMessage: "They came for you."
+        });
+      }, 24 * this.gameHourLength);
+    }
     return Object.assign({}, item, { isDone: false, id, fadeIn })
   }
   
@@ -220,7 +228,14 @@ class Main extends React.Component {
           </div>
         </div>
         <ListBox list={this.state.list} onDone={this.handleDone} firstLoad={this.state.firstLoad} />
-        {this.state.list.length === 0 && <div className="loading-container"><span className="loading-text">loading</span></div>}
+        <div className="ending-message" style={this.state.endingMessage ? {opacity:1} : {}}>
+          {this.state.endingMessage}
+          </div>
+        {this.state.list.length === 0 && this.state.firstLoad && <div className="loading-container"><span className="loading-text">loading</span></div>}
+        <div className={"no-tasks-message"} style={(this.state.list.length === 0 && !this.state.firstLoad) ? {opacity:1} : {}}>
+          No more tasks.
+        </div>
+        {this.state.list.length === 0 && !this.state.firstLoad}
       </div>
     );
   }
