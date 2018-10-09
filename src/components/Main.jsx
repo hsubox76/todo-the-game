@@ -23,7 +23,6 @@ class Main extends React.Component {
       list: [],
       time: new Date(2018, 0, 1, 8),
       timers: {},
-      palette: 1,
       params,
       firstLoad: true,
       tasksCollection: 'tasks-' + (params.source || 'default')
@@ -183,7 +182,7 @@ class Main extends React.Component {
   
   render() {
     const classes = ['main-container'];
-    classes.push('palette-' + this.state.palette);
+    classes.push('palette-' + this.props.palette);
     const settingsContainer = this.state.settingsVisible && (
       <div className="settings-container">
         <div className="settings-palette-row">
@@ -191,8 +190,8 @@ class Main extends React.Component {
           {PALETTES.map((paletteId) => (
             <button
               key={paletteId}
-              onClick={() => this.setState({ palette: paletteId })}
-              className={'palette-button palette-' + paletteId + (paletteId === this.state.palette ? ' selected' : '')}
+              onClick={() => this.props.setPalette(paletteId)}
+              className={'palette-button palette-' + paletteId + (paletteId === this.props.palette ? ' selected' : '')}
             >
               {paletteId}
             </button>
@@ -200,17 +199,22 @@ class Main extends React.Component {
         </div>
         <div className="settings-game-row">
           <div className="palette-description">choose game</div>
-          {this.state.gamesList.map((game) => (
-            <a
-              key={game.id}
-              href={"/?source=" + game.name}
-              className={'game-name' + (this.state.tasksCollection === 'tasks-' + game.name ? ' selected' : '')}>
-              {game.name}
-            </a>
-          ))}
+          <div className="game-buttons-container">
+            {this.state.gamesList.map((game) => (
+              <a
+                key={game.id}
+                href={"/?source=" + game.name}
+                className={'game-name'
+                  + (this.state.tasksCollection === 'tasks-'+ game.name ? ' selected' : '')}>
+                {game.name}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     );
+    const isLoading = this.state.list.length === 0 && this.state.firstLoad;
+    const allTasksDone = this.state.list.length === 0 && !this.state.firstLoad;
     return (
       <div className={classes.join(' ')}>
         <div className="status-box">
@@ -227,15 +231,21 @@ class Main extends React.Component {
             <Clock time={this.state.time} />
           </div>
         </div>
-        <ListBox list={this.state.list} onDone={this.handleDone} firstLoad={this.state.firstLoad} />
-        <div className="ending-message" style={this.state.endingMessage ? {opacity:1} : {}}>
-          {this.state.endingMessage}
+        {isLoading && (
+          <div className="loading-container">
+            <span className="loading-text">loading</span>
           </div>
-        {this.state.list.length === 0 && this.state.firstLoad && <div className="loading-container"><span className="loading-text">loading</span></div>}
-        <div className={"no-tasks-message"} style={(this.state.list.length === 0 && !this.state.firstLoad) ? {opacity:1} : {}}>
+        )}
+        <ListBox list={this.state.list} onDone={this.handleDone} firstLoad={this.state.firstLoad} />
+        <div className="ending-message" style={this.state.endingMessage ? { opacity: 1, display: 'block' } : {}}>
+          {this.state.endingMessage}
+        </div>
+        <div
+          className={"no-tasks-message"}
+          style={allTasksDone ? { opacity:1 } : {}}
+        >
           No more tasks.
         </div>
-        {this.state.list.length === 0 && !this.state.firstLoad}
       </div>
     );
   }

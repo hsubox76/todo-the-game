@@ -93,6 +93,13 @@ body {
   --text-color: #fff;
 }
 
+.app-container {
+  display: flex;
+  flex-direction: row-reverse;
+  height: 100%;
+  margin: 0;
+}
+
 button:hover {
   box-shadow: inset 0 0 0 50px rgba(255, 255, 255, 0.2);
 }
@@ -107,6 +114,9 @@ button:hover {
   --button-color: var(--color-3);
   --button-color-hover: var(--color-4);
   background-color: var(--container-color);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 .todo-header {
@@ -142,6 +152,7 @@ button:hover {
   margin-top: 5px;
   position: absolute;
   right: 5px;
+  max-width: 360px;
 }
 
 .settings-container .settings-palette-row {
@@ -156,6 +167,12 @@ button:hover {
   align-items: flex-start;
 }
 
+.settings-container .game-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
 .settings-container a.game-name {
   font-size: 1rem;
   padding: 7px 10px;
@@ -164,6 +181,7 @@ button:hover {
   background-color: var(--button-color);
   box-sizing: border-box;
   border-radius: 4px;
+  margin: 2px;
 }
 
 .settings-container a.game-name.selected {
@@ -177,10 +195,11 @@ button:hover {
 .settings-container .palette-description {
   display: flex;
   align-items: center;
-  justify-content: center;
   padding: 5px;
   color: #555;
   font-size: 1rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .settings-container .palette-button {
@@ -218,7 +237,6 @@ button:hover {
   background-position: 0 0;
   color: #fff;
   font-size: 2rem;
-  margin: 3px;
   height: 200px;
   display: flex;
   align-items: stretch;
@@ -345,6 +363,7 @@ button:hover {
   margin: 20px 10px;
   opacity: 0;
   transition: all 1s ease-in;
+  display: none;
 }
 
 .no-tasks-message {

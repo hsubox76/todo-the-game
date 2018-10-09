@@ -7,9 +7,7 @@ import 'firebase/firestore';
 import 'firebaseui/dist/firebaseui.css';
 import { getQueryParams } from './utils';
 
-import Main from './components/Main';
-
-import Admin from './components/admin/Admin';
+import App from './components/App';
 
 // Initialize Cloud Firestore through Firebase
 const projectId = process.env.REACT_APP_TDG_PROJECT_ID;
@@ -29,15 +27,8 @@ const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
 const params = getQueryParams();
 
-if (params.hasOwnProperty('admin')) {
-    ReactDOM.render(
-        <Admin db={firestore} ui={ui} />,
-        document.getElementById('root')
-    );
-} else {
-    ReactDOM.render(
-        <Main db={firestore} ui={ui} />,
-        document.getElementById('root')
-    );
-}
+ReactDOM.render(
+    <App db={firestore} ui={ui} admin={params.hasOwnProperty('admin')} />,
+    document.getElementById('root')
+);
 

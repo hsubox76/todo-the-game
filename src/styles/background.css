@@ -1,0 +1,53 @@
+@keyframes spin {
+  from { transform:rotate(0deg); }
+  to { transform:rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform:scale(1); }
+  50% { transform:scale(.5); }
+  100% { transform:scale(1); }
+}
+
+.background {
+	background-color: #ccc;
+	height: 100%;
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+}
+
+.item {
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+}
+
+.pulse {
+	animation-name: pulse;
+	animation-direction: alternate;
+}
+
+.spin {
+	animation-name: spin;
+	animation-direction: normal;
+}
+
+.color-1 {
+	background-color: var(--color-1);
+}
+
+.color-2 {
+	background-color: var(--color-2);
+}
+
+.color-3 {
+	background-color: var(--color-3);
+}
+
+.color-4 {
+	background-color: var(--color-4);
+}
+
+.color-5 {
+	background-color: var(--color-5);
+}
