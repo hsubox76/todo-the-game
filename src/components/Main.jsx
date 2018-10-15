@@ -13,8 +13,6 @@ import {
 import { getQueryParams } from '../utils';
 import { GAME_SPEED } from '../data/constants';
 
-const gameSpeeds = Object.keys(GAME_SPEED);
-
 class Main extends React.Component {
   constructor(props) {
     super(props);
@@ -24,6 +22,7 @@ class Main extends React.Component {
       gameHourLength: GAME_HOUR_LENGTH,
       gamesList: [],
       list: [],
+      initialTasks: [],
       time: new Date(2018, 0, 1, 8),
       timers: {},
       params,
@@ -35,7 +34,7 @@ class Main extends React.Component {
   
   componentDidMount() {
     if (this.state.params.hourlength) {
-      this.state.gameHourLength = parseInt(this.state.params.hourlength, 10);
+      this.setState({ gameHourLength: parseInt(this.state.params.hourlength, 10) });
     }
     this.props.db.collection("gameslist").get().then(snapshot => {
       this.setState({
@@ -48,10 +47,11 @@ class Main extends React.Component {
       snapshot.forEach(taskDoc => {
         const task = taskDoc.data();
         if (task.isInitial) {
-          list.push(this.prepareListItem(task));
+          list.push(task);
+          // list.push(this.prepareListItem(task));
         }
       });
-      this.setState({ list });
+      this.setState({ initialTasks: list });
     });
     setTimeout(() => this.setState({ firstLoad: false }), 5000);
   }
@@ -231,7 +231,7 @@ class Main extends React.Component {
       </div>
     );
     const isLoading = this.state.list.length === 0 && this.state.firstLoad;
-    const allTasksDone = this.state.list.length === 0 && !this.state.firstLoad;
+    const allTasksDone = this.state.list.length === 0 && this.state.isStarted;
     return (
       <div className={classes.join(' ')}>
         <div className="status-box">
@@ -255,7 +255,10 @@ class Main extends React.Component {
         )}
         {!isLoading && !this.state.isStarted && (
           <div className="start-container" onClick={() => {
-            this.setState({ isStarted: true});
+            this.setState({
+              isStarted: true,
+              list: this.state.initialTasks.map(task => this.prepareListItem(task))
+            });
             this.incrementClock();
           }}>
             start
