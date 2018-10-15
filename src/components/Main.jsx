@@ -11,27 +11,31 @@ import {
   CLOCK_INCREMENT_INTERVAL_HOURS
 } from '../data/constants';
 import { getQueryParams } from '../utils';
+import { GAME_SPEED } from '../data/constants';
+
+const gameSpeeds = Object.keys(GAME_SPEED);
 
 class Main extends React.Component {
   constructor(props) {
     super(props);
     this.lastId = 0;
-    this.gameHourLength = GAME_HOUR_LENGTH;
     const params = getQueryParams();
     this.state = {
+      gameHourLength: GAME_HOUR_LENGTH,
       gamesList: [],
       list: [],
       time: new Date(2018, 0, 1, 8),
       timers: {},
       params,
       firstLoad: true,
+      isStarted: false,
       tasksCollection: 'tasks-' + (params.source || 'default')
     };
   }
   
   componentDidMount() {
     if (this.state.params.hourlength) {
-      this.gameHourLength = parseInt(this.state.params.hourlength, 10);
+      this.state.gameHourLength = parseInt(this.state.params.hourlength, 10);
     }
     this.props.db.collection("gameslist").get().then(snapshot => {
       this.setState({
@@ -48,7 +52,6 @@ class Main extends React.Component {
         }
       });
       this.setState({ list });
-      this.incrementClock();
     });
     setTimeout(() => this.setState({ firstLoad: false }), 5000);
   }
@@ -67,7 +70,7 @@ class Main extends React.Component {
         time: addHours(this.state.time, CLOCK_INCREMENT_INTERVAL_HOURS)
       });
       this.incrementClock();
-    }, this.gameHourLength * CLOCK_INCREMENT_INTERVAL_HOURS);
+    }, this.state.gameHourLength * CLOCK_INCREMENT_INTERVAL_HOURS);
     this.setState({
       timers: Object.assign({}, this.state.timers, { clock: [timeoutId] })
     });
@@ -97,7 +100,7 @@ class Main extends React.Component {
               this.setState({
                 list: newList.concat(this.prepareListItem(doc.data(), true))
               });
-            }, spawn.age * this.gameHourLength);
+            }, spawn.age * this.state.gameHourLength);
             const timeoutIds = this.state.timers[id] || [];
             timeoutIds.push(timeoutId);
             this.setState({
@@ -112,7 +115,7 @@ class Main extends React.Component {
           list: [],
           endingMessage: "They came for you."
         });
-      }, 24 * this.gameHourLength);
+      }, 24 * this.state.gameHourLength);
     }
     return Object.assign({}, item, { isDone: false, id, fadeIn })
   }
@@ -146,7 +149,7 @@ class Main extends React.Component {
             list: this.state.list
                     .concat(this.prepareListItem(spawnedItem, true))
           });
-        }, taskToSpawn.delay * this.gameHourLength);
+        }, taskToSpawn.delay * this.state.gameHourLength);
       });
     }
     // disappear after a while
@@ -211,6 +214,20 @@ class Main extends React.Component {
             ))}
           </div>
         </div>
+        <div className="settings-game-row">
+          <div className="palette-description">speed</div>
+          <div className="speed-buttons-container">
+            {Object.keys(GAME_SPEED).map((speedKey) => (
+              <button
+                key={speedKey}
+                onClick={() => this.setState({ gameHourLength: GAME_SPEED[speedKey] })}
+                className={'speed-name'
+                  + (this.state.gameHourLength === GAME_SPEED[speedKey] ? ' selected' : '')}>
+                {speedKey.toLowerCase()}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     );
     const isLoading = this.state.list.length === 0 && this.state.firstLoad;
@@ -236,7 +253,21 @@ class Main extends React.Component {
             <span className="loading-text">loading</span>
           </div>
         )}
-        <ListBox list={this.state.list} onDone={this.handleDone} firstLoad={this.state.firstLoad} />
+        {!isLoading && !this.state.isStarted && (
+          <div className="start-container" onClick={() => {
+            this.setState({ isStarted: true});
+            this.incrementClock();
+          }}>
+            start
+          </div>
+        )}
+        {this.state.isStarted && (
+          <ListBox
+            list={this.state.list}
+            onDone={this.handleDone}
+            firstLoad={this.state.firstLoad}
+          />
+        )}
         <div className="ending-message" style={this.state.endingMessage ? { opacity: 1, display: 'block' } : {}}>
           {this.state.endingMessage}
         </div>

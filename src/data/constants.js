@@ -12,3 +12,10 @@ export const FIRESTORE_COLLECTION = {
     TASKS: 'tasks',
     TASKS_BACKUP: 'tasks_backup'
 };
+
+export const GAME_SPEED = {
+    SLOW: 1000,
+    FAST: 500,
+    FASTER: 200,
+    LIGHTSPEED: 50
+};
