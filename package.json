@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "REACT_APP_TDG_PROJECT_ID=$TDG_PROJECT_ID REACT_APP_TDG_API_KEY=$TDG_API_KEY react-scripts start",
-    "build": "react-scripts build",
+    "build": "REACT_APP_TDG_PROJECT_ID=$TDG_PROJECT_ID REACT_APP_TDG_API_KEY=$TDG_API_KEY react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },

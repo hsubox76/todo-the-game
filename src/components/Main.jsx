@@ -48,7 +48,6 @@ class Main extends React.Component {
         const task = taskDoc.data();
         if (task.isInitial) {
           list.push(task);
-          // list.push(this.prepareListItem(task));
         }
       });
       this.setState({ initialTasks: list });
