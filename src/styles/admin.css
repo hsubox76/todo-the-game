@@ -31,6 +31,10 @@
   background-color: seagreen;
 }
 
+.admin-container button.logout {
+  background-color: purple;
+}
+
 .tasks-container {
   display: flex;
   flex-wrap: wrap;
@@ -39,6 +43,11 @@
 .tasks-container.single-column {
   flex-direction: column;
   flex-wrap: none;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .global-buttons {
@@ -284,6 +293,7 @@ textarea[name="description"] {
 
 .games-list {
   padding: 5px;
+  display: flex;
 }
 
 .games-list > * {

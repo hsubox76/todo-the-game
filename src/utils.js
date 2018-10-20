@@ -8,3 +8,15 @@ export function getQueryParams() {
         return pairs;
       }, {});
 }
+
+export function updateQueryString(params) {
+  const currentParams = getQueryParams();
+  const newParams = Object.assign(currentParams, params);
+  const paramPairs = [];
+  for (const key in newParams) {
+    if (key) {
+      paramPairs.push(`${key}=${currentParams[key]}`);
+    }
+  }
+  return paramPairs.join('&');
+}

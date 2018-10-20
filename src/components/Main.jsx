@@ -10,7 +10,7 @@ import {
   GAME_HOUR_LENGTH,
   CLOCK_INCREMENT_INTERVAL_HOURS
 } from '../data/constants';
-import { getQueryParams } from '../utils';
+import { getQueryParams, updateQueryString } from '../utils';
 import { GAME_SPEED } from '../data/constants';
 
 class Main extends React.Component {
@@ -19,7 +19,7 @@ class Main extends React.Component {
     this.lastId = 0;
     const params = getQueryParams();
     this.state = {
-      gameHourLength: GAME_HOUR_LENGTH,
+      gameHourLength: params.hourlength ? parseInt(params.hourlength, 10) : GAME_HOUR_LENGTH,
       gamesList: [],
       list: [],
       initialTasks: [],
@@ -33,9 +33,6 @@ class Main extends React.Component {
   }
   
   componentDidMount() {
-    if (this.state.params.hourlength) {
-      this.setState({ gameHourLength: parseInt(this.state.params.hourlength, 10) });
-    }
     this.props.db.collection("gameslist").get().then(snapshot => {
       this.setState({
         gamesList: snapshot.docs.map(
@@ -182,6 +179,11 @@ class Main extends React.Component {
     this.setState({ tasksCollection: 'tasks-' + game.name });
   }
   
+  handleSpeedSelect = (hourLength) => {
+    this.setState({ gameHourLength: hourLength });
+    window.history.replaceState({}, '',  '/?' + updateQueryString({ hourlength: hourLength }));
+  }
+  
   render() {
     const classes = ['main-container'];
     classes.push('palette-' + this.props.palette);
@@ -202,15 +204,22 @@ class Main extends React.Component {
         <div className="settings-game-row">
           <div className="palette-description">choose game</div>
           <div className="game-buttons-container">
-            {this.state.gamesList.map((game) => (
-              <a
-                key={game.id}
-                href={"/?source=" + game.name}
-                className={'game-name'
-                  + (this.state.tasksCollection === 'tasks-'+ game.name ? ' selected' : '')}>
-                {game.name}
-              </a>
-            ))}
+            {this.state.gamesList.map((game) => {
+              const newQuery = updateQueryString({
+                hourlength: this.state.gameHourLength,
+                source: game.name
+              });
+              let href = '/?' + newQuery;
+              return (
+                <a
+                  key={game.id}
+                  href={href}
+                  className={'game-name'
+                    + (this.state.tasksCollection === 'tasks-'+ game.name ? ' selected' : '')}>
+                  {game.name}
+                </a>
+              );
+            })}
           </div>
         </div>
         <div className="settings-game-row">
@@ -219,7 +228,7 @@ class Main extends React.Component {
             {Object.keys(GAME_SPEED).map((speedKey) => (
               <button
                 key={speedKey}
-                onClick={() => this.setState({ gameHourLength: GAME_SPEED[speedKey] })}
+                onClick={() => this.handleSpeedSelect(GAME_SPEED[speedKey])}
                 className={'speed-name'
                   + (this.state.gameHourLength === GAME_SPEED[speedKey] ? ' selected' : '')}>
                 {speedKey.toLowerCase()}

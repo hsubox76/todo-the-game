@@ -431,22 +431,25 @@ class Admin extends React.Component {
     }
     return (
       <div className="admin-container">
-        <div className="global-buttons">
-          <button onClick={this.populateFirebaseFromLocal}>init firebase from local defaults</button>
-          <button onClick={this.onCopyToBackup}>copy current to backup</button>
-          <button onClick={this.onToggleShowAll}>show {this.state.showAll ? 'visible' : 'all'}</button>
-          {this.state.pathChain && <button onClick={() => this.setState({ pathChain: null })}>reset view</button>}
-          <div className="games-list">
-            <span>games:</span>
-            {this.state.gamesList.map((game) => (
-              <a
-                key={game.id}
-                href={"/?admin=true&source=" + game.name}
-                className={'game-name' + (this.state.tasksCollection === 'tasks-' + game.name ? ' selected' : '')}>
-                {game.name}
-              </a>
-            ))}
+        <div className="admin-header">
+          <div className="global-buttons">
+            <button onClick={this.populateFirebaseFromLocal}>init firebase from local defaults</button>
+            <button onClick={this.onCopyToBackup}>copy current to backup</button>
+            <button onClick={this.onToggleShowAll}>show {this.state.showAll ? 'visible' : 'all'}</button>
+            {this.state.pathChain && <button onClick={() => this.setState({ pathChain: null })}>reset view</button>}
+            <div className="games-list">
+              <span>games:</span>
+              {this.state.gamesList.map((game) => (
+                <a
+                  key={game.id}
+                  href={"/?admin=true&source=" + game.name}
+                  className={'game-name' + (this.state.tasksCollection === 'tasks-' + game.name ? ' selected' : '')}>
+                  {game.name}
+                </a>
+              ))}
+            </div>
           </div>
+          <button className="logout" onClick={() => firebase.auth().signOut()}>logout</button>
         </div>
         <EditBox
           task={taskBeingEdited}
